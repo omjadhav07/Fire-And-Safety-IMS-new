@@ -16,12 +16,23 @@ const formatRole = (user) => {
 const isActive = (user) => user.is_active ?? user.isActive ?? user.status === "active";
 const getId = (u) => u.id || u._id;
 
+// Role key such as "student", "faculty", "office_staff"
+const roleKey = (user) =>
+  String(typeof user.role === "string" ? user.role : user.role?.name || user.roles?.[0]?.name || "").toLowerCase();
+const isStudent = (user) => roleKey(user) === "student";
+
+const TABS = [
+  ["staff", "Staff"],
+  ["students", "Students"],
+];
+
 const Users = () => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [query, setQuery] = useState("");
+  const [tab, setTab] = useState("staff");
   const [reloadKey, setReloadKey] = useState(0);
 
   // modal state: { type: "edit" | "password", user }
@@ -55,13 +66,20 @@ const Users = () => {
     setReloadKey((k) => k + 1);
   };
 
+  // Staff = every role except student
+  const counts = useMemo(() => {
+    const students = users.filter(isStudent).length;
+    return { students, staff: users.length - students };
+  }, [users]);
+
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return users;
-    return users.filter((u) =>
+    const inTab = users.filter((u) => (tab === "students" ? isStudent(u) : !isStudent(u)));
+    if (!q) return inTab;
+    return inTab.filter((u) =>
       [u.name, u.email, u.phone, formatRole(u)].some((v) => String(v ?? "").toLowerCase().includes(q))
     );
-  }, [users, query]);
+  }, [users, query, tab]);
 
   const openModal = (type, user) => {
     setForm({ name: user.name || "", phone: user.phone || "", password: "" });
@@ -126,7 +144,9 @@ const Users = () => {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Users</h1>
-          <p className="text-sm text-gray-500 mt-1">{users.length} users in the system</p>
+          <p className="text-sm text-gray-500 mt-1">
+            {counts.staff} staff · {counts.students} students
+          </p>
         </div>
         <div className="flex items-center gap-3">
           <button
@@ -136,13 +156,30 @@ const Users = () => {
           >
             <RefreshCw size={18} className={loading ? "animate-spin" : ""} />
           </button>
-          <Link
-            to="/users/add-user"
-            className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-[#D32F2F] text-white font-medium hover:bg-[#B71C1C]"
-          >
-            <UserPlus size={18} /> Add user
-          </Link>
+          {tab === "staff" && (
+            <Link
+              to="/users/add-user"
+              className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-[#D32F2F] text-white font-medium hover:bg-[#B71C1C]"
+            >
+              <UserPlus size={18} /> Add user
+            </Link>
+          )}
         </div>
+      </div>
+
+      {/* Tabs: staff and students are shown separately */}
+      <div className="inline-flex p-1 rounded-lg bg-gray-100 mb-4">
+        {TABS.map(([key, label]) => (
+          <button
+            key={key}
+            onClick={() => setTab(key)}
+            className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${
+              tab === key ? "bg-white text-green-700 shadow-sm" : "text-gray-600 hover:text-gray-900"
+            }`}
+          >
+            {label} ({counts[key]})
+          </button>
+        ))}
       </div>
 
       {notice && (
@@ -189,7 +226,7 @@ const Users = () => {
               ) : filtered.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="px-4 py-10 text-center text-gray-500">
-                    {query ? "No users match your search" : "No users found"}
+                    {query ? "No users match your search" : tab === "students" ? "No students found" : "No staff users found"}
                   </td>
                 </tr>
               ) : (

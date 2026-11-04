@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { ArrowLeft, RefreshCw, Save, History, Trash2, Upload, FileSpreadsheet } from "lucide-react";
+import { ArrowLeft, RefreshCw, Save, History, Trash2, Upload } from "lucide-react";
 import {
   getClassTestById,
   saveMarksBulk,
@@ -60,7 +60,6 @@ const ClassTestMarks = () => {
   const [historyFor, setHistoryFor] = useState(null);
   const [showImport, setShowImport] = useState(false);
   const [includeRemarks, setIncludeRemarks] = useState(true);
-  const [templateBusy, setTemplateBusy] = useState(false);
 
   // test -> students of its batch (+ course / batch names)
   useEffect(() => {
@@ -188,18 +187,6 @@ const ClassTestMarks = () => {
     }
   };
 
-  const template = async () => {
-    setTemplateBusy(true);
-    setError("");
-    try {
-      await downloadMarksTemplate(testId, "xlsx");
-    } catch (err) {
-      setError(getErrorMessage(err, "Could not download the template"));
-    } finally {
-      setTemplateBusy(false);
-    }
-  };
-
   const unsaved = students.filter((s) => entryOf(s.id).dirty && entryOf(s.id).marks !== "").length;
   const status = String(test?.status || "scheduled").toLowerCase();
 
@@ -239,13 +226,6 @@ const ClassTestMarks = () => {
                   aria-label="Refresh"
                 >
                   <RefreshCw size={18} className={loading ? "animate-spin" : ""} />
-                </button>
-                <button
-                  onClick={template}
-                  disabled={templateBusy}
-                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 disabled:opacity-60"
-                >
-                  <FileSpreadsheet size={16} /> {templateBusy ? "Downloading..." : "Template"}
                 </button>
                 <ExportMenu
                   onError={setError}

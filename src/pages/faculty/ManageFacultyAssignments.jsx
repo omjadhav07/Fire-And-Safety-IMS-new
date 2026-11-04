@@ -1,18 +1,17 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Search, Plus, RefreshCw } from "lucide-react";
-import { getAssignments, createAssignment } from "./facultyAssignmentService";
+import { Search, Plus, RefreshCw, Trash2 } from "lucide-react";
+import { getAssignments, createAssignment, deleteAssignment } from "./facultyAssignmentService";
 import { getUsers } from "../users/userService";
 import { getCourses, getBatches } from "../courses/courseService";
 import { getErrorMessage } from "../../services/api";
 import { getId, fmtDate, inputClass } from "../../services/helpers";
 import AssignFaculty from "./AssignFaculty";
-import { initialForm, roleOf, pick, relId, relName } from "./facultyUtils";
+import { initialForm, roleOf, pick } from "./facultyUtils";
 
 const ManageFacultyAssignments = () => {
   const [assignments, setAssignments] = useState([]);
   const [faculty, setFaculty] = useState([]);
   const [courses, setCourses] = useState([]);
-  const [batchNames, setBatchNames] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
@@ -27,66 +26,77 @@ const ManageFacultyAssignments = () => {
   const [batchesLoading, setBatchesLoading] = useState(false);
   const [formError, setFormError] = useState("");
   const [saving, setSaving] = useState(false);
+  const [deletingId, setDeletingId] = useState(null);
 
-  // Faculty users + courses (for dropdowns and names), loaded once
+  // Load Users & Courses
   useEffect(() => {
     let cancelled = false;
-    Promise.all([getUsers({ limit: 500 }), getCourses().catch(() => [])])
-      .then(([users, courseList]) => {
+    Promise.all([getUsers(), getCourses()])
+      .then(([usersRes, courseRes]) => {
         if (cancelled) return;
-        setFaculty(users.list.filter((u) => /faculty/i.test(roleOf(u)) && u.is_active !== false));
+        
+        const userList = usersRes.list || [];
+        const courseList = Array.isArray(courseRes) ? courseRes : (courseRes?.data || courseRes?.list || courseRes?.courses || []);
+
+        // Filter for active faculty (case insensitive, checking string or object roles)
+        const activeFaculty = userList.filter((u) => {
+            const r = typeof u.role === 'string' ? u.role : u.role?.name || "";
+            return r.toLowerCase().includes("faculty") && u.is_active !== false;
+        });
+        
+        setFaculty(activeFaculty.length > 0 ? activeFaculty : userList);
         setCourses(courseList);
       })
-      .catch((err) => !cancelled && setError(getErrorMessage(err, "Could not load faculty list")));
-    return () => {
-      cancelled = true;
-    };
+      .catch((err) => {
+        if (!cancelled) setError(getErrorMessage(err, "Could not load faculty or courses"));
+      });
+    return () => { cancelled = true; };
   }, []);
 
-  // GET /faculty-assignments[?faculty_id=]  + batch names for the courses involved
+  // Load Assignments
   useEffect(() => {
     let cancelled = false;
+    setLoading(true);
+    setError(""); // Clear previous errors
+    
     getAssignments({ faculty_id: facultyFilter })
-      .then(async (list) => {
-        const courseIds = [...new Set(list.map((a) => relId(pick(a, "course_id", "course", "courseId"))).filter(Boolean))];
-        const batchLists = await Promise.all(courseIds.map((id) => getBatches(id).catch(() => [])));
+      .then((list) => {
         if (cancelled) return;
-        setBatchNames(Object.fromEntries(batchLists.flat().map((b) => [getId(b), b.name])));
-        setAssignments(list);
-        setError("");
+        setAssignments(list); // list is guaranteed to be an array now
       })
-      .catch((err) => !cancelled && setError(getErrorMessage(err, "Could not load faculty assignments")))
-      .finally(() => !cancelled && setLoading(false));
-    return () => {
-      cancelled = true;
-    };
+      .catch((err) => {
+        if (!cancelled) setError(getErrorMessage(err, "Could not load faculty assignments"));
+      })
+      .finally(() => {
+        // THIS IS THE FIX: Always turn off loading, even if the response was empty or threw an error
+        if (!cancelled) setLoading(false); 
+      });
+
+    return () => { cancelled = true; };
   }, [facultyFilter, reloadKey]);
 
-  const reload = () => {
-    setLoading(true);
-    setReloadKey((k) => k + 1);
-  };
+  const reload = () => setReloadKey((k) => k + 1);
+  const changeFilter = (id) => setFacultyFilter(id);
 
-  const changeFilter = (id) => {
-    setLoading(true);
-    setFacultyFilter(id);
-  };
-
-  const facultyNames = useMemo(() => Object.fromEntries(faculty.map((f) => [getId(f), f.name || f.email])), [faculty]);
-  const courseNames = useMemo(() => Object.fromEntries(courses.map((c) => [getId(c), c.name])), [courses]);
-
+  // Format rows for the table based on your populated JSON response
   const rows = useMemo(
     () =>
-      assignments.map((a) => ({
-        raw: a,
-        id: getId(a),
-        faculty: relName(pick(a, "faculty_id", "faculty", "facultyId"), facultyNames) || "Unknown faculty",
-        course: relName(pick(a, "course_id", "course", "courseId"), courseNames) || "-",
-        batch: relName(pick(a, "batch_id", "batch", "batchId"), batchNames) || "-",
-        subject: a.subject || "-",
-        date: a.createdAt || a.assignedAt,
-      })),
-    [assignments, facultyNames, courseNames, batchNames]
+      assignments.map((a) => {
+        const facObj = pick(a, "faculty_id", "faculty", "facultyId");
+        const courObj = pick(a, "course_id", "course", "courseId");
+        const batObj = pick(a, "batch_id", "batch", "batchId");
+
+        return {
+          raw: a,
+          id: a._id || a.id, // MongoDB uses _id
+          faculty: facObj?.name || "Unknown faculty",
+          course: courObj?.name || "-",
+          batch: batObj?.name || "-",
+          subject: a.subject || "-",
+          date: a.createdAt || a.assignedAt,
+        };
+      }),
+    [assignments]
   );
 
   const filtered = useMemo(() => {
@@ -95,14 +105,17 @@ const ManageFacultyAssignments = () => {
     return rows.filter((r) => [r.faculty, r.course, r.batch, r.subject].some((v) => String(v).toLowerCase().includes(q)));
   }, [rows, query]);
 
-  /* ───── form ───── */
+  /* ───── form handlers ───── */
 
   const loadBatches = (courseId) => {
     setBatches([]);
     if (!courseId) return;
     setBatchesLoading(true);
     getBatches(courseId)
-      .then(setBatches)
+      .then((res) => {
+          const list = Array.isArray(res) ? res : (res?.list || res?.data || []);
+          setBatches(list);
+      })
       .catch((err) => setFormError(getErrorMessage(err, "Could not load batches")))
       .finally(() => setBatchesLoading(false));
   };
@@ -119,7 +132,6 @@ const ManageFacultyAssignments = () => {
     loadBatches(course_id);
   };
 
-  // POST /faculty-assignments  { faculty_id, course_id, batch_id, subject }
   const handleSave = async (e) => {
     e.preventDefault();
     if (!form.faculty_id) return setFormError("Select a faculty member");
@@ -135,13 +147,27 @@ const ManageFacultyAssignments = () => {
         batch_id: form.batch_id,
         subject: form.subject.trim(),
       });
-      setNotice(`Assigned ${facultyNames[form.faculty_id] || "faculty"} to "${form.subject.trim()}"`);
+      setNotice(`Assigned faculty successfully`);
       setShowForm(false);
-      reload();
+      reload(); // Refresh the table
     } catch (err) {
       setFormError(getErrorMessage(err, "Could not create assignment"));
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleDelete = async (id) => {
+    if (!window.confirm("Are you sure you want to remove this assignment?")) return;
+    setDeletingId(id);
+    try {
+      await deleteAssignment(id);
+      setNotice("Assignment removed successfully.");
+      reload();
+    } catch (err) {
+      setError(getErrorMessage(err, "Could not delete assignment"));
+    } finally {
+      setDeletingId(null);
     }
   };
 
@@ -210,17 +236,18 @@ const ManageFacultyAssignments = () => {
               <th className="px-4 py-3 font-medium">Batch</th>
               <th className="px-4 py-3 font-medium">Subject</th>
               <th className="px-4 py-3 font-medium">Assigned on</th>
+              <th className="px-4 py-3 font-medium text-right">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
             {loading ? (
               <tr>
-                <td colSpan={5} className="px-4 py-10 text-center text-gray-500">Loading assignments...</td>
+                <td colSpan={6} className="px-4 py-10 text-center text-gray-500">Loading assignments...</td>
               </tr>
             ) : filtered.length === 0 ? (
               <tr>
-                <td colSpan={5} className="px-4 py-10 text-center text-gray-500">
-                  {rows.length === 0 ? "No assignments yet. Assign a faculty member to a batch." : "No assignments match your search."}
+                <td colSpan={6} className="px-4 py-10 text-center text-gray-500">
+                  {rows.length === 0 ? "No assignments yet." : "No assignments match your search."}
                 </td>
               </tr>
             ) : (
@@ -231,6 +258,16 @@ const ManageFacultyAssignments = () => {
                   <td className="px-4 py-3 text-gray-600">{r.batch}</td>
                   <td className="px-4 py-3 text-gray-900">{r.subject}</td>
                   <td className="px-4 py-3 text-gray-600 whitespace-nowrap">{fmtDate(r.date)}</td>
+                  <td className="px-4 py-3 text-right">
+                    <button
+                      onClick={() => handleDelete(r.id)}
+                      disabled={deletingId === r.id}
+                      className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors disabled:opacity-50"
+                      title="Remove assignment"
+                    >
+                      <Trash2 size={16} className={deletingId === r.id ? "animate-pulse" : ""} />
+                    </button>
+                  </td>
                 </tr>
               ))
             )}

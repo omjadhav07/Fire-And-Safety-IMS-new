@@ -62,8 +62,11 @@ export const getStudentById = async (id) => {
 };
 
 // POST /students
+// IMPORTANT: The new API does not allow "student_id" in the payload.
 export const createStudent = async (body) => {
-  const { data } = await api.post("/students", body);
+  // Destructure to remove student_id, keeping the rest of the fields
+  const { student_id, ...cleanBody } = body; 
+  const { data } = await api.post("/students", cleanBody);
   return unwrap(data);
 };
 

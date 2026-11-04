@@ -5,12 +5,13 @@ import Modal from "../../components/Modal";
 import { flattenRows, fmtDateTime } from "../fees/feeUtils";
 
 // GET /class-tests/:id/marks/:studentId/history  - every change made to one student's mark
-const MarkHistory = ({ testId, student, onClose }) => {
+// loadHistory(studentId) can be passed to use another endpoint (exams use /exams/:id/marks/:studentId/history)
+const MarkHistory = ({ testId, student, onClose, loadHistory }) => {
   const [state, setState] = useState({ loading: true, history: [], error: "" });
 
   useEffect(() => {
     let cancelled = false;
-    getMarkHistory(testId, student.id)
+    (loadHistory ? loadHistory(student.id) : getMarkHistory(testId, student.id))
       .then((list) => {
         if (cancelled) return;
         const sorted = [...list].sort((a, b) => new Date(b.changed_at || b.createdAt) - new Date(a.changed_at || a.createdAt));
@@ -20,7 +21,7 @@ const MarkHistory = ({ testId, student, onClose }) => {
     return () => {
       cancelled = true;
     };
-  }, [testId, student.id]);
+  }, [testId, student.id, loadHistory]);
 
   const { loading, history, error } = state;
 

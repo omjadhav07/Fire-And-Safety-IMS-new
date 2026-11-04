@@ -2,12 +2,17 @@ import api from "../../services/api";
 
 // GET /users
 export const getUsers = async (params = {}) => {
-  const { data } = await api.get("/users", { params });
+  // Safely remove "limit" if the backend rejects it with a 400 Bad Request
+  const { limit, ...safeParams } = params; 
+  
+  const { data } = await api.get("/users", { params: safeParams });
   const payload = data?.data ?? data;
+  
   // list may be the array itself, or { users: [...] } / { items: [...] }
   const list = Array.isArray(payload)
     ? payload
     : payload?.users || payload?.items || payload?.rows || [];
+    
   return { list, meta: data?.meta };
 };
 

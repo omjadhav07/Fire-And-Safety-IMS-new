@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Search, Plus, RefreshCw, Receipt, ReceiptText, ShieldCheck, FilePlus2, Ban, Download } from "lucide-react";
-import { getPendingFees, cancelPayment, feeStudentId } from "./feeService";
+import { getPendingFees, cancelPayment, feeStudentId, getFeeSummary } from "./feeService";
 import { getStudentNameMap } from "../students/studentService";
 import { getCourses, getFeeComponents } from "../courses/courseService";
 import { getErrorMessage } from "../../services/api";
@@ -25,6 +25,10 @@ const courseIdOfRow = (r, courses) => {
   return match ? getId(match) : "";
 };
 
+// The student record id used by the fee APIs, taken from a pending-fee row
+const feeIdOfRow = (r) =>
+  objectIdOf(r.student_id) || objectIdOf(r.studentId) || objectIdOf(r.student) || objectIdOf(r.user_id) || "";
+
 // Recent payments are kept in this browser so they are still there after a refresh
 const RECENT_KEY = "ims_recent_payments";
 const readRecent = () => {
@@ -48,6 +52,7 @@ const Fees = () => {
   const [courseNames, setCourseNames] = useState({});
   const [courses, setCourses] = useState([]);
   const [courseTotals, setCourseTotals] = useState({}); // courseId -> total fee (sum of fee components)
+  const [summaries, setSummaries] = useState({}); // student fee id -> { totalDue, totalPaid, balance } from the ledger
   const [recent, setRecent] = useState(readRecent); // payments recorded on this computer
   const [downloadingKey, setDownloadingKey] = useState("");
 
@@ -75,12 +80,24 @@ const Fees = () => {
   const [receiptId, setReceiptId] = useState(null);
   const [cancellingId, setCancellingId] = useState(null);
 
-  // GET /fees/pending (+ student and course names for display)
+  // GET /fees/pending (+ student and course names, + each student's ledger summary)
   useEffect(() => {
     let cancelled = false;
     Promise.all([getPendingFees(), getStudentNameMap().catch(() => ({})), getCourses().catch(() => [])])
-      .then(([list, nameMap, courses]) => {
+      .then(async ([list, nameMap, courses]) => {
+        // Total / paid / balance come from GET /fees/:studentId/summary (the real ledger),
+        // because the pending row only describes part of the student's fees.
+        const feeIds = [...new Set(list.map(feeIdOfRow).filter(Boolean))];
+        const pairs = await Promise.all(
+          feeIds.map((id) =>
+            getFeeSummary(id)
+              .then((s) => [id, s])
+              .catch(() => null)
+          )
+        );
         if (cancelled) return;
+
+        setSummaries(Object.fromEntries(pairs.filter(Boolean)));
         setPending(list);
         setNames(nameMap);
         setCourseNames(Object.fromEntries(courses.map((c) => [getId(c), c.name])));
@@ -111,35 +128,42 @@ const Fees = () => {
 
   const rows = useMemo(
     () =>
-      pending.map((r, i) => {
-        const feeId =
-          objectIdOf(r.student_id) || objectIdOf(r.studentId) || objectIdOf(r.student) || objectIdOf(r.user_id) || "";
-        const name = studentNameOf(r) || names[feeId] || "Unknown student";
-        const course = r.course || r.course_id;
+      pending
+        .map((r, i) => {
+          const feeId = feeIdOfRow(r);
+          const name = studentNameOf(r) || names[feeId] || "Unknown student";
+          const course = r.course || r.course_id;
+          const ledger = summaries[feeId]; // { totalDue, totalPaid, balance } or undefined
 
-        // Total fee: from the API row if present, else the course's total fee
-        const total =
-          num(r, "total_fee", "totalFee", "total", "total_amount", "totalAmount", "total_payable", "net_fee", "course_fee") ??
-          courseTotals[courseIdOfRow(r, courses)];
-        const paid = num(r, "paid", "paid_amount", "paidAmount", "total_paid", "totalPaid", "amount_paid");
-        // Pending = total - paid (never below 0). Falls back to the API value when the total is unknown.
-        const pendingAmt =
-          total !== undefined
-            ? Math.max(total - (paid || 0), 0)
-            : num(r, "pending", "pending_amount", "pendingAmount", "balance", "due", "due_amount", "dueAmount", "outstanding");
+          // Total fee: ledger first, then the API row, then the course's total fee
+          const total =
+            num(ledger, "totalDue") ??
+            num(r, "total_fee", "totalFee", "total", "total_amount", "totalAmount", "total_payable", "net_fee", "course_fee") ??
+            courseTotals[courseIdOfRow(r, courses)];
+          const paid = num(ledger, "totalPaid") ?? num(r, "paid", "paid_amount", "paidAmount", "total_paid", "totalPaid", "amount_paid");
+          // Pending: the ledger balance when known, else total - paid (never below 0)
+          const ledgerBalance = num(ledger, "balance");
+          const pendingAmt =
+            ledgerBalance !== undefined
+              ? ledgerBalance
+              : total !== undefined
+              ? Math.max(total - (paid || 0), 0)
+              : num(r, "pending", "pending_amount", "pendingAmount", "balance", "due", "due_amount", "dueAmount", "outstanding");
 
-        return {
-          key: `${feeId || getId(r) || "row"}-${i}`,
-          name,
-          courseId: courseIdOfRow(r, courses),
-          course: (course && typeof course === "object" ? course.name : courseNames[course]) || str(r, "course_name", "courseName") || "-",
-          total,
-          paid,
-          pending: pendingAmt,
-          student: { id: feeId, feeId, name },
-        };
-      }),
-    [pending, names, courseNames, courses, courseTotals]
+          return {
+            key: `${feeId || getId(r) || "row"}-${i}`,
+            name,
+            courseId: courseIdOfRow(r, courses),
+            course: (course && typeof course === "object" ? course.name : courseNames[course]) || str(r, "course_name", "courseName") || "-",
+            total,
+            paid,
+            pending: pendingAmt,
+            student: { id: feeId, feeId, name },
+          };
+        })
+        // one row per student, even if the API lists several fee lines for the same student
+        .filter((r, i, arr) => !r.student.feeId || arr.findIndex((x) => x.student.feeId === r.student.feeId) === i),
+    [pending, names, courseNames, courses, courseTotals, summaries]
   );
 
   const filtered = useMemo(() => {

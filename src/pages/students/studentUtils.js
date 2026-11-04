@@ -25,7 +25,7 @@ export const statusClass = (s) => STATUS_STYLES[s] || "bg-gray-100 text-gray-600
 export const today = () => new Date().toISOString().slice(0, 10);
 
 export const emptyForm = () => ({
-  student_id: "",
+  // student_id: "",
   full_name: "",
   dob: "",
   gender: "",

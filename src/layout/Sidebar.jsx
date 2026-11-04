@@ -1,14 +1,17 @@
 import React, { useState } from 'react';
 import { NavLink, useNavigate, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Users, GraduationCap, Library, Megaphone, UserCheck, ClipboardList, ClipboardCheck, IndianRupee, Wallet, FolderOpen, ScrollText, ChevronDown, Search, LogOut } from 'lucide-react';
+import { LayoutDashboard, Users, GraduationCap, Library, Megaphone, UserCheck, ClipboardList, ClipboardCheck, Award, IndianRupee, Wallet, FolderOpen, ScrollText, ChevronDown, Search, LogOut } from 'lucide-react';
 import { logoutUser } from '../pages/auth/authService';
+import { canAccess, getCurrentRole } from '../config/permissions';
 
-// Add new modules here as they are built
+// Add new modules here as they are built.
+// "access" is a page key from config/permissions.js: the item shows only for roles allowed there.
 const MENU = [
-  { label: 'Dashboard', icon: LayoutDashboard, path: '/dashboard' },
+  { label: 'Dashboard', icon: LayoutDashboard, path: '/dashboard', access: 'dashboard' },
   {
     label: 'User Management',
     icon: Users,
+    access: 'users',
     children: [
       { label: 'All Users', path: '/users' },
       // { label: 'Add User', path: '/users/add-user' },
@@ -18,38 +21,38 @@ const MENU = [
     label: 'Course Master',
     icon: GraduationCap,
     children: [
-      { label: 'Courses', path: '/courses' },
-      { label: 'Faculty Assignments', path: '/faculty-assignments' },
-      { label: 'Class Schedules', path: '/class-schedules' },
+      { label: 'Courses', path: '/courses', access: 'courses' },
+      { label: 'Faculty Assignments', path: '/faculty-assignments', access: 'facultyAssignments' },
+      { label: 'Class Schedules', path: '/class-schedules', access: 'classSchedules' },
     ],
   },
-  { label: 'Class Tests', icon: ClipboardCheck, path: '/class-tests', roles: ['super_admin', 'faculty'] },
-  { label: 'Enquiries', icon: ClipboardList, path: '/enquiries' },
-  { label: 'Students', icon: UserCheck, path: '/students' },
-  { label: 'Fees', icon: IndianRupee, path: '/fees', roles: ['super_admin'] },
-  { label: 'My Fees', icon: Wallet, path: '/my-fees', roles: ['student'] },
+  { label: 'Class Tests', icon: ClipboardCheck, path: '/class-tests', access: 'classTests' },
+  { label: 'Exams', icon: Award, path: '/exam-results', access: 'examResults' },
+  { label: 'Enquiries', icon: ClipboardList, path: '/enquiries', access: 'enquiries' },
+  { label: 'Students', icon: UserCheck, path: '/students', access: 'students' },
+  { label: 'Fees', icon: IndianRupee, path: '/fees', access: 'fees' },
+  { label: 'My Fees', icon: Wallet, path: '/my-fees', access: 'myFees' },
   {
     label: 'Library',
     icon: Library,
+    access: 'library',
     children: [
       { label: 'Books', path: '/library/books' },
       { label: 'Categories', path: '/library/categories' },
       { label: 'Book Issues', path: '/library/issues' },
     ],
   },
-  { label: 'Notices', icon: Megaphone, path: '/notices' },
-  { label: 'My Files', icon: FolderOpen, path: '/files' },
-  { label: 'Audit Logs', icon: ScrollText, path: '/audit-logs', roles: ['super_admin'] },
+  { label: 'Notices', icon: Megaphone, path: '/notices', access: 'notices' },
+  { label: 'My Files', icon: FolderOpen, path: '/files', access: 'files' },
+  { label: 'Audit Logs', icon: ScrollText, path: '/audit-logs', access: 'auditLogs' },
 ];
 
-// Role of the logged-in user (saved at login / refreshed by the header)
-const getRole = () => {
-  try {
-    const u = JSON.parse(localStorage.getItem('userData') || 'null');
-    return typeof u?.role === 'string' ? u.role : u?.role?.name || u?.roles?.[0]?.name || '';
-  } catch {
-    return '';
-  }
+// Menu for one role: drop what the role may not open, and groups that end up empty
+const menuForRole = (role) => {
+  const ok = (item) => !item.access || canAccess(role, item.access);
+  return MENU.filter(ok)
+    .map((m) => (m.children ? { ...m, children: m.children.filter(ok) } : m))
+    .filter((m) => !m.children || m.children.length > 0);
 };
 
 const Sidebar = ({ open, onNavigate }) => {
@@ -76,8 +79,7 @@ const Sidebar = ({ open, onNavigate }) => {
 
   // Menu search: match the group label or any child label
   const q = search.trim().toLowerCase();
-  const role = getRole();
-  const allowedMenu = MENU.filter((m) => !m.roles || m.roles.includes(role));
+  const allowedMenu = menuForRole(getCurrentRole());
   const visibleMenu = allowedMenu.map((m) => {
     if (!q) return m;
     const selfMatch = m.label.toLowerCase().includes(q);

@@ -14,12 +14,9 @@ const CreateStudent = ({ editing, form, setForm, courses, batches, batchesLoadin
         {error && <p className="text-sm text-red-600">{error}</p>}
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {!editing && (
-            <Field label="Student ID">
-              <input value={form.student_id} onChange={set("student_id")} placeholder="FSC-2026-0003" className={inputClass} />
-            </Field>
-          )}
-          <Field label="Full name" className={editing ? "sm:col-span-2" : ""}>
+          {/* Removed the Student ID field since the new API auto-generates it */}
+          
+          <Field label="Full name" className="sm:col-span-2">
             <input value={form.full_name} onChange={set("full_name")} placeholder="Amit Patel" className={inputClass} />
           </Field>
           <Field label="Date of birth">

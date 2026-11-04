@@ -1,11 +1,11 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { CheckCircle2 } from "lucide-react";
-import { createPayment, feeStudentId } from "./feeService";
+import { createPayment, feeStudentId, getFeeSummary } from "./feeService";
 import { getErrorMessage } from "../../services/api";
 import Modal from "../../components/Modal";
 import StudentSearch from "../../components/StudentSearch";
 import { inputClass, getId, titleCase } from "../../services/helpers";
-import { PAYMENT_MODES, inr } from "./feeUtils";
+import { PAYMENT_MODES, inr, num } from "./feeUtils";
 
 // POST /fees/payments
 const PaymentModal = ({ initialStudent = null, onClose, onCreated, onViewReceipt }) => {
@@ -15,6 +15,22 @@ const PaymentModal = ({ initialStudent = null, onClose, onCreated, onViewReceipt
   const [saving, setSaving] = useState(false);
   const [done, setDone] = useState(null);
 
+  // Outstanding balance of the selected student (GET /fees/:studentId/summary)
+  const studentKey = student ? feeStudentId(student) : "";
+  const [loaded, setLoaded] = useState({ id: "", balance: null });
+  const balance = loaded.id === studentKey ? loaded.balance : null;
+
+  useEffect(() => {
+    if (!studentKey) return undefined;
+    let cancelled = false;
+    getFeeSummary(studentKey)
+      .then((s) => !cancelled && setLoaded({ id: studentKey, balance: num(s, "balance") ?? null }))
+      .catch(() => !cancelled && setLoaded({ id: studentKey, balance: null }));
+    return () => {
+      cancelled = true;
+    };
+  }, [studentKey]);
+
   const handleSave = async (e) => {
     e.preventDefault();
     if (!student) return setError("Select a student");
@@ -22,6 +38,13 @@ const PaymentModal = ({ initialStudent = null, onClose, onCreated, onViewReceipt
     if (!Number.isFinite(amount) || amount <= 0) return setError("Enter an amount greater than 0");
     const studentId = feeStudentId(student);
     if (!studentId) return setError("This student has no linked login account");
+    if (balance !== null && amount > balance) {
+      return setError(
+        balance > 0
+          ? `Amount is more than the outstanding balance (${inr(balance)})`
+          : "This student has no outstanding balance"
+      );
+    }
 
     setSaving(true);
     setError("");
@@ -56,6 +79,11 @@ const PaymentModal = ({ initialStudent = null, onClose, onCreated, onViewReceipt
             {done.message || "Payment recorded"} · <span className="font-semibold">{inr(done.entry.amount)}</span> from{" "}
             <span className="font-semibold">{done.entry.student.name}</span>
           </p>
+          {balance !== null && (
+            <p className="text-sm text-gray-600">
+              Remaining balance: <span className="font-semibold">{inr(Math.max(balance - done.entry.amount, 0))}</span>
+            </p>
+          )}
           <div className="flex justify-center gap-3 pt-2">
             {done.entry.id && (
               <button
@@ -84,6 +112,21 @@ const PaymentModal = ({ initialStudent = null, onClose, onCreated, onViewReceipt
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1.5">Student</label>
           <StudentSearch value={student} onChange={setStudent} />
+          {balance !== null && (
+            <p className="mt-1.5 text-sm text-gray-600">
+              Outstanding balance:{" "}
+              <span className={`font-semibold ${balance > 0 ? "text-red-600" : "text-green-700"}`}>{inr(balance)}</span>
+              {balance > 0 && (
+                <button
+                  type="button"
+                  onClick={() => setForm({ ...form, amount: String(balance) })}
+                  className="ml-3 text-xs font-medium text-green-700 hover:underline"
+                >
+                  Pay full balance
+                </button>
+              )}
+            </p>
+          )}
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
@@ -91,6 +134,7 @@ const PaymentModal = ({ initialStudent = null, onClose, onCreated, onViewReceipt
             <input
               type="number"
               min="1"
+              max={balance !== null && balance > 0 ? balance : undefined}
               step="0.01"
               value={form.amount}
               onChange={(e) => setForm({ ...form, amount: e.target.value })}
