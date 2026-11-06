@@ -4,7 +4,7 @@ import { updateStudentStage, getStudentStageHistory } from "./studentService";
 import { getErrorMessage } from "../../services/api";
 import Modal from "../../components/Modal";
 import { getId, titleCase, inputClass } from "../../services/helpers";
-import { LIFECYCLE_STAGES, STAGE_STATUSES, stageStatusClass } from "./studentUtils";
+import { LIFECYCLE_STAGES, STAGE_STATUSES, stageStatusClass, stageLabel } from "./studentUtils";
 
 const fmtDateTime = (v) => {
   const d = v ? new Date(v) : null;
@@ -76,7 +76,7 @@ const StageModal = ({ student, onClose, onUpdated }) => {
       setHistoryLoading(true);
       setHistoryKey((k) => k + 1);
       setTab("history");
-      onUpdated(`${student.name}: stage set to ${titleCase(next.stage)} (${titleCase(next.status)})`);
+      onUpdated(`${student.name}: stage set to ${stageLabel(next.stage)} (${titleCase(next.status)})`);
     } catch (err) {
       setFormError(getErrorMessage(err, "Could not update stage"));
     } finally {
@@ -93,7 +93,7 @@ const StageModal = ({ student, onClose, onUpdated }) => {
         </p>
         <div className="mt-2 flex items-center gap-2 text-sm">
           <span className="text-gray-500">Current:</span>
-          <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">{titleCase(current.stage)}</span>
+          <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-700">{stageLabel(current.stage)}</span>
           <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${stageStatusClass(current.status)}`}>
             {titleCase(current.status)}
           </span>
@@ -109,7 +109,7 @@ const StageModal = ({ student, onClose, onUpdated }) => {
             key={key}
             onClick={() => setTab(key)}
             className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${
-              tab === key ? "bg-white text-green-700 shadow-sm" : "text-gray-600 hover:text-gray-900"
+              tab === key ? "bg-white text-sky-700 shadow-sm" : "text-gray-600 hover:text-gray-900"
             }`}
           >
             {label}
@@ -129,7 +129,7 @@ const StageModal = ({ student, onClose, onUpdated }) => {
                 className={inputClass}
               >
                 {stageOptions.map((s) => (
-                  <option key={s} value={s}>{titleCase(s)}</option>
+                  <option key={s} value={s}>{stageLabel(s)}</option>
                 ))}
               </select>
             </div>
@@ -163,7 +163,7 @@ const StageModal = ({ student, onClose, onUpdated }) => {
             <button
               type="submit"
               disabled={saving}
-              className="px-5 py-2.5 rounded-lg bg-[#16A34A] text-white font-medium hover:bg-[#15803D] disabled:opacity-60"
+              className="px-5 py-2.5 rounded-lg bg-[#0EA5E9] text-white font-medium hover:bg-[#0284C7] disabled:opacity-60"
             >
               {saving ? "Updating..." : "Update stage"}
             </button>
@@ -174,7 +174,7 @@ const StageModal = ({ student, onClose, onUpdated }) => {
       {tab === "history" && (
         <div>
           {success && (
-            <div className="mb-3 rounded-lg bg-green-50 border border-green-200 text-green-700 text-sm px-3 py-2">{success}</div>
+            <div className="mb-3 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm px-3 py-2">{success}</div>
           )}
           {historyError && <p className="text-sm text-red-600">{historyError}</p>}
           {historyLoading ? (
@@ -186,11 +186,11 @@ const StageModal = ({ student, onClose, onUpdated }) => {
             <ol className="relative border-l-2 border-gray-100 ml-2 space-y-5">
               {history.map((h, i) => (
                 <li key={getId(h) || i} className="ml-5 relative">
-                  <span className="absolute -left-[27px] top-1.5 w-3 h-3 rounded-full bg-[#16A34A] ring-4 ring-white" />
+                  <span className="absolute -left-[27px] top-1.5 w-3 h-3 rounded-full bg-[#0EA5E9] ring-4 ring-white" />
                   <div className="flex flex-wrap items-center gap-1.5 text-sm">
-                    <span className="text-gray-500">{titleCase(h.from_stage)}</span>
+                    <span className="text-gray-500">{stageLabel(h.from_stage)}</span>
                     <ArrowRight size={14} className="text-gray-400" />
-                    <span className="font-semibold text-gray-900">{titleCase(h.to_stage)}</span>
+                    <span className="font-semibold text-gray-900">{stageLabel(h.to_stage)}</span>
                     <span className={`ml-1 px-2 py-0.5 rounded-full text-xs font-medium ${stageStatusClass(h.stage_status)}`}>
                       {titleCase(h.stage_status)}
                     </span>

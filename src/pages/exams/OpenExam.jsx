@@ -23,7 +23,7 @@ const OpenExam = () => {
 
       <form onSubmit={open} className="max-w-md rounded-2xl border border-gray-100 bg-white p-6 shadow-sm space-y-4" noValidate>
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-green-50 text-green-700 flex items-center justify-center">
+          <div className="w-10 h-10 rounded-xl bg-sky-50 text-sky-700 flex items-center justify-center">
             <Award size={20} />
           </div>
           <p className="font-semibold text-gray-900">Open an exam</p>
@@ -41,7 +41,7 @@ const OpenExam = () => {
             className={inputClass}
           />
         </div>
-        <button type="submit" className="w-full px-5 py-2.5 rounded-lg bg-[#16A34A] text-white font-medium hover:bg-[#15803D]">
+        <button type="submit" className="w-full px-5 py-2.5 rounded-lg bg-[#0EA5E9] text-white font-medium hover:bg-[#0284C7]">
           Open results
         </button>
       </form>

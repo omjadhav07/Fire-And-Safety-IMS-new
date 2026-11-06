@@ -188,7 +188,7 @@ const ManageFacultyAssignments = () => {
           </button>
           <button
             onClick={openCreate}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-[#16A34A] text-white font-medium hover:bg-[#15803D]"
+            className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-[#0EA5E9] text-white font-medium hover:bg-[#0284C7]"
           >
             <Plus size={18} /> Assign faculty
           </button>
@@ -218,7 +218,7 @@ const ManageFacultyAssignments = () => {
       </div>
 
       {notice && (
-        <div className="mb-4 rounded-lg bg-green-50 border border-green-200 text-green-700 text-sm px-4 py-3 flex justify-between">
+        <div className="mb-4 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm px-4 py-3 flex justify-between">
           <span>{notice}</span>
           <button onClick={() => setNotice("")} aria-label="Dismiss">×</button>
         </div>
@@ -229,7 +229,7 @@ const ManageFacultyAssignments = () => {
 
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-x-auto">
         <table className="w-full text-sm text-left">
-          <thead className="bg-gray-50 text-gray-600">
+          <thead className="bg-[#0B1437] text-white">
             <tr>
               <th className="px-4 py-3 font-medium">Faculty</th>
               <th className="px-4 py-3 font-medium">Course</th>

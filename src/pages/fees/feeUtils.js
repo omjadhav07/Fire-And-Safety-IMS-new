@@ -96,9 +96,9 @@ export const studentNameOf = (r) => {
 };
 
 export const PAYMENT_STATUS_STYLES = {
-  paid: "bg-green-100 text-green-700",
-  success: "bg-green-100 text-green-700",
-  completed: "bg-green-100 text-green-700",
+  paid: "bg-emerald-100 text-emerald-700",
+  success: "bg-emerald-100 text-emerald-700",
+  completed: "bg-emerald-100 text-emerald-700",
   cancelled: "bg-gray-200 text-gray-600",
   canceled: "bg-gray-200 text-gray-600",
   failed: "bg-red-100 text-red-700",
@@ -219,7 +219,7 @@ export const ledgerTotals = (ledger = []) =>
   );
 
 const LEDGER_STATUS_STYLES = {
-  paid: "bg-green-100 text-green-700",
+  paid: "bg-emerald-100 text-emerald-700",
   partial: "bg-blue-100 text-blue-700",
   partially_paid: "bg-blue-100 text-blue-700",
   pending: "bg-amber-100 text-amber-700",

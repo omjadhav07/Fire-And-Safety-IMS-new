@@ -66,7 +66,7 @@ export const ExportMenu = ({ onError, exportFn = exportBooks, formats = ["xlsx",
       <button
         onClick={() => (formats.length === 1 ? run(formats[0]) : setOpen((o) => !o))}
         disabled={busy}
-        className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 disabled:opacity-60"
+        className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 disabled:opacity-60"
       >
         {busy ? <RefreshCw size={16} className="animate-spin" /> : <Download size={16} />}
         {busy ? "Exporting..." : "Export"}
@@ -192,7 +192,7 @@ export const ImportModal = ({
               }}
               onClick={() => !uploading && inputRef.current?.click()}
               className={`cursor-pointer rounded-xl border-2 border-dashed px-4 py-8 text-center transition-colors ${
-                dragOver ? "border-[#16A34A] bg-green-50" : "border-gray-300 hover:bg-gray-50"
+                dragOver ? "border-[#0EA5E9] bg-sky-50" : "border-gray-300 hover:bg-gray-50"
               }`}
             >
               <UploadCloud size={28} className="mx-auto text-gray-400" />
@@ -218,7 +218,7 @@ export const ImportModal = ({
 
             {uploading && (
               <div className="h-2 rounded-full bg-gray-100 overflow-hidden">
-                <div className="h-full bg-[#16A34A] transition-all" style={{ width: `${progress}%` }} />
+                <div className="h-full bg-[#0EA5E9] transition-all" style={{ width: `${progress}%` }} />
               </div>
             )}
 
@@ -243,7 +243,7 @@ export const ImportModal = ({
               <button
                 onClick={handleImport}
                 disabled={!file || uploading}
-                className="px-5 py-2.5 rounded-lg bg-[#16A34A] text-white font-medium hover:bg-[#15803D] disabled:opacity-60"
+                className="px-5 py-2.5 rounded-lg bg-[#0EA5E9] text-white font-medium hover:bg-[#0284C7] disabled:opacity-60"
               >
                 {uploading ? `Importing... ${progress}%` : `Import ${entity}`}
               </button>
@@ -253,7 +253,7 @@ export const ImportModal = ({
 
         {report && (
           <>
-            <div className="rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800">
+            <div className="rounded-lg border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-800">
               {report.message || "Import finished"}
             </div>
 
@@ -292,7 +292,7 @@ export const ImportModal = ({
               >
                 Import another file
               </button>
-              <button onClick={onClose} className="px-5 py-2.5 rounded-lg bg-[#16A34A] text-white font-medium hover:bg-[#15803D]">
+              <button onClick={onClose} className="px-5 py-2.5 rounded-lg bg-[#0EA5E9] text-white font-medium hover:bg-[#0284C7]">
                 Done
               </button>
             </div>

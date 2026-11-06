@@ -30,20 +30,20 @@ const ForgotPassword = () => {
   };
 
   return (
-    <div className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-green-50 via-white to-emerald-50 p-4">
+    <div className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-sky-50 via-white to-emerald-50 p-4">
       {/* Decorative background */}
-      <div className="absolute -top-32 -left-32 w-96 h-96 rounded-full bg-green-300/30 blur-3xl" />
+      <div className="absolute -top-32 -left-32 w-96 h-96 rounded-full bg-sky-300/30 blur-3xl" />
       <div className="absolute -bottom-32 -right-32 w-[28rem] h-[28rem] rounded-full bg-emerald-300/30 blur-3xl" />
 
-      <div className="relative w-full max-w-md bg-white/90 backdrop-blur rounded-3xl shadow-xl shadow-green-900/10 border border-gray-100 p-8 sm:p-10">
-        <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-green-600 to-emerald-500 text-white flex items-center justify-center shadow-lg shadow-green-600/30 mb-6">
+      <div className="relative w-full max-w-md bg-white/90 backdrop-blur rounded-3xl shadow-xl shadow-sky-900/10 border border-gray-100 p-8 sm:p-10">
+        <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-sky-600 to-emerald-500 text-white flex items-center justify-center shadow-lg shadow-sky-600/30 mb-6">
           <KeyRound size={26} />
         </div>
 
         <h1 className="text-3xl font-bold text-gray-900">Forgot password?</h1>
         <p className="text-gray-500 mt-2 mb-6 leading-relaxed">
           Enter your email and we will send you a reset link. The link is valid for{" "}
-          <span className="font-semibold text-green-700">30 minutes</span>.
+          <span className="font-semibold text-sky-700">30 minutes</span>.
         </p>
 
         {error && (
@@ -53,7 +53,7 @@ const ForgotPassword = () => {
           </div>
         )}
         {success && (
-          <div className="mb-5 flex items-start gap-2 rounded-xl bg-green-50 border border-green-200 text-green-700 text-sm px-4 py-3">
+          <div className="mb-5 flex items-start gap-2 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm px-4 py-3">
             <CheckCircle2 size={18} className="mt-0.5 shrink-0" />
             <span>{success}</span>
           </div>
@@ -67,7 +67,7 @@ const ForgotPassword = () => {
             <div className="relative group">
               <Mail
                 size={18}
-                className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 transition-colors group-focus-within:text-green-600"
+                className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 transition-colors group-focus-within:text-sky-600"
               />
               <input
                 id="email"
@@ -78,7 +78,7 @@ const ForgotPassword = () => {
                   setError("");
                 }}
                 placeholder="admin@ims.com"
-                className="w-full pl-11 pr-3 py-3 rounded-xl border border-gray-200 bg-gray-50 text-gray-900 placeholder-gray-400 transition-all duration-200 focus:outline-none focus:bg-white focus:border-green-600 focus:ring-4 focus:ring-green-600/10"
+                className="w-full pl-11 pr-3 py-3 rounded-xl border border-gray-200 bg-gray-50 text-gray-900 placeholder-gray-400 transition-all duration-200 focus:outline-none focus:bg-white focus:border-sky-600 focus:ring-4 focus:ring-sky-600/10"
               />
             </div>
           </div>
@@ -86,7 +86,7 @@ const ForgotPassword = () => {
           <button
             type="submit"
             disabled={loading}
-            className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-gradient-to-r from-green-600 to-emerald-500 text-white font-semibold shadow-lg shadow-green-600/30 transition-all duration-200 hover:from-green-700 hover:to-emerald-600 hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:translate-y-0"
+            className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-gradient-to-r from-sky-600 to-emerald-500 text-white font-semibold shadow-lg shadow-sky-600/30 transition-all duration-200 hover:from-sky-700 hover:to-emerald-600 hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:translate-y-0"
           >
             {loading ? (
               <>
@@ -104,7 +104,7 @@ const ForgotPassword = () => {
 
         <Link
           to="/login"
-          className="mt-6 inline-flex items-center gap-1.5 text-sm font-medium text-gray-600 hover:text-green-600 transition-colors"
+          className="mt-6 inline-flex items-center gap-1.5 text-sm font-medium text-gray-600 hover:text-sky-600 transition-colors"
         >
           <ArrowLeft size={16} /> Back to login
         </Link>

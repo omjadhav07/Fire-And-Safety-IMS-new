@@ -5,7 +5,7 @@ import { getFeeComponents, addFeeComponent, updateFeeComponent } from "./courseS
 import { getErrorMessage } from "../../services/api";
 
 const inputClass =
-  "w-full px-3 py-2.5 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#D32F2F]/40 focus:border-[#D32F2F]";
+  "w-full px-3 py-2.5 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#0EA5E9]/40 focus:border-[#0EA5E9]";
 
 const initialForm = { name: "", amount: "", required_for_exam: false };
 const getId = (f) => f.id || f._id;
@@ -91,7 +91,7 @@ const CourseFees = () => {
 
   return (
     <div className="max-w-4xl">
-      <Link to="/courses" className="inline-flex items-center gap-1.5 text-sm text-gray-600 hover:text-[#D32F2F] mb-4">
+      <Link to="/courses" className="inline-flex items-center gap-1.5 text-sm text-gray-600 hover:text-[#0EA5E9] mb-4">
         <ArrowLeft size={16} /> Back to courses
       </Link>
 
@@ -107,7 +107,7 @@ const CourseFees = () => {
       </div>
 
       {notice && (
-        <div className="mb-4 rounded-lg bg-green-50 border border-green-200 text-green-700 text-sm px-4 py-3 flex justify-between">
+        <div className="mb-4 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm px-4 py-3 flex justify-between">
           <span>{notice}</span>
           <button onClick={() => setNotice("")} aria-label="Dismiss">×</button>
         </div>
@@ -118,7 +118,7 @@ const CourseFees = () => {
 
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-x-auto mb-6">
         <table className="w-full text-sm text-left">
-          <thead className="bg-gray-50 text-gray-600">
+          <thead className="bg-[#0B1437] text-white">
             <tr>
               <th className="px-4 py-3 font-medium">Component</th>
               <th className="px-4 py-3 font-medium">Amount</th>
@@ -196,7 +196,7 @@ const CourseFees = () => {
               type="checkbox"
               checked={form.required_for_exam}
               onChange={(e) => setForm({ ...form, required_for_exam: e.target.checked })}
-              className="h-4 w-4 accent-[#D32F2F]"
+              className="h-4 w-4 accent-[#0EA5E9]"
             />
             Must be paid before the exam form can be submitted
           </label>
@@ -214,7 +214,7 @@ const CourseFees = () => {
             <button
               type="submit"
               disabled={saving}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-[#D32F2F] text-white font-medium hover:bg-[#B71C1C] disabled:opacity-60"
+              className="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-[#0EA5E9] text-white font-medium hover:bg-[#0284C7] disabled:opacity-60"
             >
               {editing ? <Save size={18} /> : <Plus size={18} />}
               {editing ? (saving ? "Saving..." : "Save changes") : saving ? "Adding..." : "Add fee"}

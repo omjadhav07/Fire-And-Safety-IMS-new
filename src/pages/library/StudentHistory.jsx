@@ -37,7 +37,7 @@ const StudentHistory = () => {
 
   return (
     <div>
-      <Link to="/library/issues" className="inline-flex items-center gap-1.5 text-sm text-gray-600 hover:text-green-700 mb-3">
+      <Link to="/library/issues" className="inline-flex items-center gap-1.5 text-sm text-gray-600 hover:text-sky-700 mb-3">
         <ArrowLeft size={16} /> Back to book issues
       </Link>
 
@@ -54,7 +54,7 @@ const StudentHistory = () => {
 
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-x-auto">
         <table className="w-full text-sm text-left">
-          <thead className="bg-gray-50 text-gray-600">
+          <thead className="bg-[#0B1437] text-white">
             <tr>
               <th className="px-4 py-3 font-medium">Book</th>
               <th className="px-4 py-3 font-medium">Issued on</th>

@@ -41,29 +41,29 @@
 
 //   const inputClass =
 //     "block w-full h-11 rounded-md border border-slate-300 bg-white px-3.5 text-[15px] text-slate-900 placeholder-slate-400 " +
-//     "transition-colors focus:outline-none focus:border-green-700 focus:ring-2 focus:ring-green-700/20";
+//     "transition-colors focus:outline-none focus:border-sky-700 focus:ring-2 focus:ring-sky-700/20";
 
 //   return (
 //     <div className="min-h-screen grid lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)] bg-white text-slate-900">
 //       {/* Brand panel */}
-//       <aside className="relative hidden lg:flex flex-col justify-between bg-[#0E3B2C] text-white px-14 py-12">
+//       <aside className="relative hidden lg:flex flex-col justify-between bg-[#0B1437] text-white px-14 py-12">
 //         {/* Hazard-stripe edge: the one signature detail */}
 //         <div
 //           aria-hidden="true"
 //           className="absolute inset-y-0 right-0 w-2"
 //           style={{
 //             backgroundImage:
-//               "repeating-linear-gradient(135deg, #F5B820 0 10px, #0E3B2C 10px 20px)",
+//               "repeating-linear-gradient(135deg, #F5B820 0 10px, #0B1437 10px 20px)",
 //           }}
 //         />
 
 //         <div className="flex items-center gap-3">
-//           <div className="flex h-10 w-10 items-center justify-center rounded-md bg-white text-[#0E3B2C]">
+//           <div className="flex h-10 w-10 items-center justify-center rounded-md bg-white text-[#0B1437]">
 //             <Flame size={22} strokeWidth={2.25} />
 //           </div>
 //           <div className="leading-tight">
 //             <p className="text-base font-semibold">Fire &amp; Safety College</p>
-//             <p className="text-sm text-green-100/70">Institute Management System</p>
+//             <p className="text-sm text-sky-100/70">Institute Management System</p>
 //           </div>
 //         </div>
 
@@ -71,20 +71,20 @@
 //           <h2 className="text-[34px] font-semibold leading-[1.2] tracking-tight">
 //             Admissions, fees, exams and library in one system.
 //           </h2>
-//           <p className="mt-4 text-[15px] leading-relaxed text-green-100/80">
+//           <p className="mt-4 text-[15px] leading-relaxed text-sky-100/80">
 //             Sign in with the account issued by the college office. What you see depends on your role.
 //           </p>
 
 //           <ul className="mt-8 divide-y divide-white/10 border-y border-white/10 text-[15px]">
 //             {ROLES.map((r) => (
-//               <li key={r} className="py-3 text-green-50/90">
+//               <li key={r} className="py-3 text-sky-50/90">
 //                 {r}
 //               </li>
 //             ))}
 //           </ul>
 //         </div>
 
-//         <p className="text-sm text-green-100/60">
+//         <p className="text-sm text-sky-100/60">
 //           &copy; {new Date().getFullYear()} Fire &amp; Safety College. All rights reserved.
 //         </p>
 //       </aside>
@@ -94,7 +94,7 @@
 //         <div className="mx-auto w-full max-w-[400px]">
 //           {/* Mobile brand */}
 //           <div className="mb-10 flex items-center gap-3 lg:hidden">
-//             <div className="flex h-10 w-10 items-center justify-center rounded-md bg-[#0E3B2C] text-white">
+//             <div className="flex h-10 w-10 items-center justify-center rounded-md bg-[#0B1437] text-white">
 //               <Flame size={22} strokeWidth={2.25} />
 //             </div>
 //             <div className="leading-tight">
@@ -141,7 +141,7 @@
 //                 </label>
 //                 <Link
 //                   to="/forgot-password"
-//                   className="rounded text-sm font-medium text-green-800 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-green-700/40"
+//                   className="rounded text-sm font-medium text-sky-800 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-700/40"
 //                 >
 //                   Forgot password?
 //                 </Link>
@@ -160,7 +160,7 @@
 //                 <button
 //                   type="button"
 //                   onClick={() => setShowPassword((s) => !s)}
-//                   className="absolute right-1.5 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded text-slate-500 hover:text-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-green-700/40"
+//                   className="absolute right-1.5 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded text-slate-500 hover:text-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-700/40"
 //                   aria-label={showPassword ? "Hide password" : "Show password"}
 //                 >
 //                   {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
@@ -171,7 +171,7 @@
 //             <button
 //               type="submit"
 //               disabled={loading}
-//               className="flex h-11 w-full items-center justify-center gap-2 rounded-md bg-green-800 text-[15px] font-semibold text-white transition-colors hover:bg-green-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-green-700 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
+//               className="flex h-11 w-full items-center justify-center gap-2 rounded-md bg-sky-800 text-[15px] font-semibold text-white transition-colors hover:bg-sky-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-700 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
 //             >
 //               {loading && (
 //                 <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" />
@@ -447,7 +447,7 @@ const Login = () => {
 
   const inputClass =
     "block w-full h-12 rounded-xl border border-gray-200 bg-gray-50 pl-11 pr-4 text-[15px] text-gray-900 placeholder-gray-400 " +
-    "transition focus:outline-none focus:bg-white focus:border-green-600 focus:ring-4 focus:ring-green-600/15";
+    "transition focus:outline-none focus:bg-white focus:border-sky-600 focus:ring-4 focus:ring-sky-600/15";
 
   return (
     <div className="min-h-screen bg-white lg:grid lg:grid-cols-[minmax(0,11fr)_minmax(0,9fr)]">
@@ -463,13 +463,13 @@ const Login = () => {
         {/* Green corner wedge */}
         <div
           aria-hidden="true"
-          className="absolute right-0 top-0 h-40 w-40 bg-green-600"
+          className="absolute right-0 top-0 h-40 w-40 bg-sky-600"
           style={{ clipPath: "polygon(100% 0, 0 0, 100% 100%)" }}
         />
 
         {/* Logo */}
         <div className="absolute left-10 top-10 flex items-center gap-3 text-white">
-          <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-green-600 shadow-lg shadow-green-600/30">
+          <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-sky-600 shadow-lg shadow-sky-600/30">
             <Flame size={22} />
           </span>
           <span className="text-lg font-bold">Fire &amp; Safety College</span>
@@ -477,7 +477,7 @@ const Login = () => {
 
         {/* Message */}
         <div className="absolute inset-x-10 bottom-12 max-w-xl text-white">
-          <span className="block h-1 w-14 rounded-full bg-green-600" />
+          <span className="block h-1 w-14 rounded-full bg-sky-600" />
           <h2 className="mt-5 text-4xl font-bold leading-tight xl:text-[44px]">
             Trained to protect lives.
           </h2>
@@ -492,7 +492,7 @@ const Login = () => {
         <div className="w-full max-w-[380px]">
           {/* Mobile brand */}
           <div className="mb-10 flex items-center gap-3 lg:hidden">
-            <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-green-600 text-white shadow-lg shadow-green-600/30">
+            <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-sky-600 text-white shadow-lg shadow-sky-600/30">
               <Flame size={22} />
             </span>
             <span className="text-lg font-bold text-gray-900">Fire &amp; Safety College</span>
@@ -519,7 +519,7 @@ const Login = () => {
               <div className="group relative">
                 <Mail
                   size={18}
-                  className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 transition-colors group-focus-within:text-green-600"
+                  className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 transition-colors group-focus-within:text-sky-600"
                 />
                 <input
                   id="email"
@@ -542,7 +542,7 @@ const Login = () => {
                 </label>
                 <Link
                   to="/forgot-password"
-                  className="rounded text-sm font-medium text-green-700 hover:text-green-800 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-green-600/40"
+                  className="rounded text-sm font-medium text-sky-700 hover:text-sky-800 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-600/40"
                 >
                   Forgot password?
                 </Link>
@@ -550,7 +550,7 @@ const Login = () => {
               <div className="group relative">
                 <Lock
                   size={18}
-                  className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 transition-colors group-focus-within:text-green-600"
+                  className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 transition-colors group-focus-within:text-sky-600"
                 />
                 <input
                   id="password"
@@ -565,7 +565,7 @@ const Login = () => {
                 <button
                   type="button"
                   onClick={() => setShowPassword((s) => !s)}
-                  className="absolute right-2 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-lg text-gray-400 transition hover:bg-gray-100 hover:text-gray-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-green-600/40"
+                  className="absolute right-2 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-lg text-gray-400 transition hover:bg-gray-100 hover:text-gray-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-600/40"
                   aria-label={showPassword ? "Hide password" : "Show password"}
                 >
                   {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
@@ -576,7 +576,7 @@ const Login = () => {
             <button
               type="submit"
               disabled={loading}
-              className="group flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-green-600 text-[15px] font-semibold text-white shadow-lg shadow-green-600/30 transition hover:bg-green-700 focus:outline-none focus-visible:ring-4 focus-visible:ring-green-600/30 disabled:cursor-not-allowed disabled:opacity-60"
+              className="group flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-sky-600 text-[15px] font-semibold text-white shadow-lg shadow-sky-600/30 transition hover:bg-sky-700 focus:outline-none focus-visible:ring-4 focus-visible:ring-sky-600/30 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {loading ? (
                 <>

@@ -20,7 +20,7 @@
 // import { examStatusClass, resultOf } from "./examUtils";
 // import MarkHistory from "../classTests/MarkHistory";
 
-// const RESULT_STYLES = { pass: "bg-green-100 text-green-700", fail: "bg-red-100 text-red-700" };
+// const RESULT_STYLES = { pass: "bg-emerald-100 text-emerald-700", fail: "bg-red-100 text-red-700" };
 // const blank = { marks: "", remarks: "", saved: false, dirty: false };
 
 // // Marks the API sends with the exam (if any)
@@ -283,7 +283,7 @@
 
 //   return (
 //     <div>
-//       <Link to="/exam-results" className="inline-flex items-center gap-1.5 text-sm text-gray-600 hover:text-green-700 mb-3">
+//       <Link to="/exam-results" className="inline-flex items-center gap-1.5 text-sm text-gray-600 hover:text-sky-700 mb-3">
 //         <ArrowLeft size={16} /> Back to exams
 //       </Link>
 
@@ -300,7 +300,7 @@
 //                   <h1 className="text-2xl font-bold text-gray-900">{exam.title}</h1>
 //                   <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${examStatusClass(status)}`}>{titleCase(status)}</span>
 //                   {published !== undefined && (
-//                     <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${published ? "bg-green-100 text-green-700" : "bg-amber-100 text-amber-700"}`}>
+//                     <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${published ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"}`}>
 //                       {published ? "Results published" : "Results not published"}
 //                     </span>
 //                   )}
@@ -338,7 +338,7 @@
 //                   <button
 //                     onClick={publish}
 //                     disabled={publishBusy}
-//                     className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-[#16A34A] text-white font-medium hover:bg-[#15803D] disabled:opacity-60"
+//                     className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-[#0EA5E9] text-white font-medium hover:bg-[#0284C7] disabled:opacity-60"
 //                   >
 //                     <Send size={16} /> {publishBusy ? "Publishing..." : "Publish results"}
 //                   </button>
@@ -347,7 +347,7 @@
 //             </div>
 
 //             {notice && (
-//               <div className="mb-4 rounded-lg bg-green-50 border border-green-200 text-green-700 text-sm px-4 py-3 flex justify-between">
+//               <div className="mb-4 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm px-4 py-3 flex justify-between">
 //                 <span>{notice}</span>
 //                 <button onClick={() => setNotice("")} aria-label="Dismiss">×</button>
 //               </div>
@@ -362,7 +362,7 @@
 //                   key={key}
 //                   onClick={() => setTab(key)}
 //                   className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${
-//                     tab === key ? "bg-white text-green-700 shadow-sm" : "text-gray-600 hover:text-gray-900"
+//                     tab === key ? "bg-white text-sky-700 shadow-sm" : "text-gray-600 hover:text-gray-900"
 //                   }`}
 //                 >
 //                   {label}
@@ -375,7 +375,7 @@
 //                 <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-3">
 //                   <p className="text-sm text-gray-600">
 //                     {summary.entered} of {students.length} marked ·{" "}
-//                     <span className="text-green-700">{summary.passed} passed</span> ·{" "}
+//                     <span className="text-sky-700">{summary.passed} passed</span> ·{" "}
 //                     <span className="text-red-600">{summary.failed} failed</span>
 //                     {readOnlyHint && <span className="text-gray-400"> · {readOnlyHint}</span>}
 //                   </p>
@@ -383,7 +383,7 @@
 //                     <button
 //                       onClick={saveAll}
 //                       disabled={saving || unsaved === 0}
-//                       className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-[#16A34A] text-white font-medium hover:bg-[#15803D] disabled:opacity-50"
+//                       className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-[#0EA5E9] text-white font-medium hover:bg-[#0284C7] disabled:opacity-50"
 //                     >
 //                       <Save size={16} /> {saving ? "Saving..." : `Save all${unsaved ? ` (${unsaved})` : ""}`}
 //                     </button>
@@ -397,7 +397,7 @@
 
 //                 <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-x-auto">
 //                   <table className="w-full text-sm text-left">
-//                     <thead className="bg-gray-50 text-gray-600">
+//                     <thead className="bg-[#0B1437] text-white">
 //                       <tr>
 //                         <th className="px-4 py-3 font-medium">Student</th>
 //                         <th className="px-4 py-3 font-medium w-36">Marks (/{exam.max_marks})</th>
@@ -462,7 +462,7 @@
 //                                       onClick={() => saveOne(s.id)}
 //                                       disabled={busyId === s.id || !e.dirty || e.marks === ""}
 //                                       title="Save this mark"
-//                                       className="p-2 rounded-lg text-gray-500 hover:bg-green-50 hover:text-green-700 disabled:opacity-30"
+//                                       className="p-2 rounded-lg text-gray-500 hover:bg-sky-50 hover:text-sky-700 disabled:opacity-30"
 //                                     >
 //                                       <Save size={16} />
 //                                     </button>
@@ -514,7 +514,7 @@
 
 //                 <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-x-auto">
 //                   <table className="w-full text-sm text-left">
-//                     <thead className="bg-gray-50 text-gray-600">
+//                     <thead className="bg-[#0B1437] text-white">
 //                       <tr>
 //                         <th className="px-4 py-3 font-medium">Student</th>
 //                         <th className="px-4 py-3 font-medium">Marks</th>
@@ -593,7 +593,7 @@ import { ROLE, getCurrentRole } from "../../config/permissions";
 import { examStatusClass, resultOf } from "./examUtils";
 import MarkHistory from "../classTests/MarkHistory";
 
-const RESULT_STYLES = { pass: "bg-green-100 text-green-700", fail: "bg-red-100 text-red-700" };
+const RESULT_STYLES = { pass: "bg-emerald-100 text-emerald-700", fail: "bg-red-100 text-red-700" };
 const blank = { marks: "", remarks: "", saved: false, dirty: false };
 
 // Marks the API sends with the exam (if any)
@@ -856,7 +856,7 @@ const ExamMarks = () => {
 
   return (
     <div>
-      <Link to="/exam-results" className="inline-flex items-center gap-1.5 text-sm text-gray-600 hover:text-green-700 mb-3">
+      <Link to="/exam-results" className="inline-flex items-center gap-1.5 text-sm text-gray-600 hover:text-sky-700 mb-3">
         <ArrowLeft size={16} /> Back to exams
       </Link>
 
@@ -873,7 +873,7 @@ const ExamMarks = () => {
                   <h1 className="text-2xl font-bold text-gray-900">{exam.title}</h1>
                   <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${examStatusClass(status)}`}>{titleCase(status)}</span>
                   {published !== undefined && (
-                    <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${published ? "bg-green-100 text-green-700" : "bg-amber-100 text-amber-700"}`}>
+                    <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${published ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"}`}>
                       {published ? "Results published" : "Results not published"}
                     </span>
                   )}
@@ -920,7 +920,7 @@ const ExamMarks = () => {
                   <button
                     onClick={publish}
                     disabled={publishBusy}
-                    className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-[#16A34A] text-white font-medium hover:bg-[#15803D] disabled:opacity-60"
+                    className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-[#0EA5E9] text-white font-medium hover:bg-[#0284C7] disabled:opacity-60"
                   >
                     <Send size={16} /> {publishBusy ? "Publishing..." : "Publish results"}
                   </button>
@@ -929,7 +929,7 @@ const ExamMarks = () => {
             </div>
 
             {notice && (
-              <div className="mb-4 rounded-lg bg-green-50 border border-green-200 text-green-700 text-sm px-4 py-3 flex justify-between">
+              <div className="mb-4 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm px-4 py-3 flex justify-between">
                 <span>{notice}</span>
                 <button onClick={() => setNotice("")} aria-label="Dismiss">×</button>
               </div>
@@ -944,7 +944,7 @@ const ExamMarks = () => {
                   key={key}
                   onClick={() => setTab(key)}
                   className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${
-                    tab === key ? "bg-white text-green-700 shadow-sm" : "text-gray-600 hover:text-gray-900"
+                    tab === key ? "bg-white text-sky-700 shadow-sm" : "text-gray-600 hover:text-gray-900"
                   }`}
                 >
                   {label}
@@ -957,7 +957,7 @@ const ExamMarks = () => {
                 <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-3">
                   <p className="text-sm text-gray-600">
                     {summary.entered} of {students.length} marked ·{" "}
-                    <span className="text-green-700">{summary.passed} passed</span> ·{" "}
+                    <span className="text-sky-700">{summary.passed} passed</span> ·{" "}
                     <span className="text-red-600">{summary.failed} failed</span>
                     {readOnlyHint && <span className="text-gray-400"> · {readOnlyHint}</span>}
                   </p>
@@ -965,7 +965,7 @@ const ExamMarks = () => {
                     <button
                       onClick={saveAll}
                       disabled={saving || unsaved === 0}
-                      className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-[#16A34A] text-white font-medium hover:bg-[#15803D] disabled:opacity-50"
+                      className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-[#0EA5E9] text-white font-medium hover:bg-[#0284C7] disabled:opacity-50"
                     >
                       <Save size={16} /> {saving ? "Saving..." : `Save all${unsaved ? ` (${unsaved})` : ""}`}
                     </button>
@@ -979,7 +979,7 @@ const ExamMarks = () => {
 
                 <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-x-auto">
                   <table className="w-full text-sm text-left">
-                    <thead className="bg-gray-50 text-gray-600">
+                    <thead className="bg-[#0B1437] text-white">
                       <tr>
                         <th className="px-4 py-3 font-medium">Student</th>
                         <th className="px-4 py-3 font-medium w-36">Marks (/{exam.max_marks})</th>
@@ -1044,7 +1044,7 @@ const ExamMarks = () => {
                                       onClick={() => saveOne(s.id)}
                                       disabled={busyId === s.id || !e.dirty || e.marks === ""}
                                       title="Save this mark"
-                                      className="p-2 rounded-lg text-gray-500 hover:bg-green-50 hover:text-green-700 disabled:opacity-30"
+                                      className="p-2 rounded-lg text-gray-500 hover:bg-sky-50 hover:text-sky-700 disabled:opacity-30"
                                     >
                                       <Save size={16} />
                                     </button>
@@ -1096,7 +1096,7 @@ const ExamMarks = () => {
 
                 <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-x-auto">
                   <table className="w-full text-sm text-left">
-                    <thead className="bg-gray-50 text-gray-600">
+                    <thead className="bg-[#0B1437] text-white">
                       <tr>
                         <th className="px-4 py-3 font-medium">Student</th>
                         <th className="px-4 py-3 font-medium">Marks</th>

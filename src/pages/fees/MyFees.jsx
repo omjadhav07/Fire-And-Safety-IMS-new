@@ -82,7 +82,7 @@ const MyFees = () => {
           {hasStats && (
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <Stat label="Total fee" value={total} />
-              <Stat label="Paid" value={paid} tone="text-green-700" />
+              <Stat label="Paid" value={paid} tone="text-sky-700" />
               <Stat label="Pending" value={pending} tone={pending > 0 ? "text-red-600" : "text-gray-900"} />
             </div>
           )}
@@ -107,7 +107,7 @@ const MyFees = () => {
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-sm text-left">
-                  <thead className="bg-gray-50 text-gray-600">
+                  <thead className="bg-[#0B1437] text-white">
                     <tr>
                       <th className="px-4 py-3 font-medium">Date</th>
                       <th className="px-4 py-3 font-medium text-right">Amount</th>

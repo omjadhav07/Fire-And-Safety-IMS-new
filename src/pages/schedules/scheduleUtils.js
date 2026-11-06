@@ -18,7 +18,7 @@ export const fmtTime = (t) => {
 
 export const SCHEDULE_STATUS_STYLES = {
   scheduled: "bg-blue-100 text-blue-700",
-  completed: "bg-green-100 text-green-700",
+  completed: "bg-emerald-100 text-emerald-700",
   cancelled: "bg-gray-200 text-gray-600",
 };
 export const scheduleStatusClass = (s) => SCHEDULE_STATUS_STYLES[String(s || "").toLowerCase()] || "bg-gray-100 text-gray-600";

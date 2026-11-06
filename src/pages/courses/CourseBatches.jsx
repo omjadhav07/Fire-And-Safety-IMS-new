@@ -6,7 +6,7 @@ import { getErrorMessage } from "../../services/api";
 import Modal from "../../components/Modal";
 
 const inputClass =
-  "w-full px-3 py-2.5 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#16A34A]/40 focus:border-[#16A34A]";
+  "w-full px-3 py-2.5 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#0EA5E9]/40 focus:border-[#0EA5E9]";
 
 const initialForm = { name: "", start_date: "", end_date: "" };
 const getId = (b) => b.id || b._id;
@@ -130,7 +130,7 @@ const CourseBatches = () => {
 
   return (
     <div>
-      <Link to="/courses" className="inline-flex items-center gap-1.5 text-sm text-gray-600 hover:text-[#16A34A] mb-4">
+      <Link to="/courses" className="inline-flex items-center gap-1.5 text-sm text-gray-600 hover:text-[#0EA5E9] mb-4">
         <ArrowLeft size={16} /> Back to courses
       </Link>
 
@@ -141,14 +141,14 @@ const CourseBatches = () => {
         </div>
         <button
           onClick={openCreate}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-[#16A34A] text-white font-medium hover:bg-[#15803D]"
+          className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-[#0EA5E9] text-white font-medium hover:bg-[#0284C7]"
         >
           <Plus size={18} /> Create batch
         </button>
       </div>
 
       {notice && (
-        <div className="mb-4 rounded-lg bg-green-50 border border-green-200 text-green-700 text-sm px-4 py-3 flex justify-between">
+        <div className="mb-4 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm px-4 py-3 flex justify-between">
           <span>{notice}</span>
           <button onClick={() => setNotice("")} aria-label="Dismiss">×</button>
         </div>
@@ -159,7 +159,7 @@ const CourseBatches = () => {
 
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-x-auto">
         <table className="w-full text-sm text-left">
-          <thead className="bg-gray-50 text-gray-600">
+          <thead className="bg-[#0B1437] text-white">
             <tr>
               <th className="px-4 py-3 font-medium">Batch name</th>
               <th className="px-4 py-3 font-medium">Start date</th>
@@ -190,7 +190,7 @@ const CourseBatches = () => {
                     <td className="px-4 py-3">
                       <span
                         className={`px-2.5 py-1 rounded-full text-xs font-medium capitalize ${
-                          open ? "bg-green-100 text-green-700" : "bg-gray-200 text-gray-600"
+                          open ? "bg-emerald-100 text-emerald-700" : "bg-gray-200 text-gray-600"
                         }`}
                       >
                         {b.status || "active"}
@@ -210,7 +210,7 @@ const CourseBatches = () => {
                           disabled={busyId === getId(b)}
                           title={open ? "Close batch" : "Reopen batch"}
                           className={`p-2 rounded-lg hover:bg-gray-100 disabled:opacity-50 ${
-                            open ? "text-green-600" : "text-gray-400"
+                            open ? "text-sky-600" : "text-gray-400"
                           }`}
                         >
                           <Power size={16} />
@@ -270,7 +270,7 @@ const CourseBatches = () => {
               <button
                 type="submit"
                 disabled={saving}
-                className="px-5 py-2.5 rounded-lg bg-[#16A34A] text-white font-medium hover:bg-[#15803D] disabled:opacity-60"
+                className="px-5 py-2.5 rounded-lg bg-[#0EA5E9] text-white font-medium hover:bg-[#0284C7] disabled:opacity-60"
               >
                 {saving ? "Saving..." : editing ? "Save changes" : "Create batch"}
               </button>

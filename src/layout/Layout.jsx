@@ -12,13 +12,11 @@ const Layout = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#F0FAF4]">
-      <Header onMenuClick={() => setSidebarOpen((o) => !o)} />
+    <div className="min-h-screen bg-[#F1F5F9]">
+      <Header sidebarOpen={sidebarOpen} onMenuClick={() => setSidebarOpen((o) => !o)} />
 
       {/* Dark overlay behind the drawer on mobile */}
-      {sidebarOpen && (
-        <div className="fixed inset-0 top-16 z-30 bg-black/40 lg:hidden" onClick={() => setSidebarOpen(false)} />
-      )}
+      {sidebarOpen && <div className="fixed inset-0 z-30 bg-black/50 lg:hidden" onClick={() => setSidebarOpen(false)} />}
 
       <Sidebar open={sidebarOpen} onNavigate={closeOnMobile} />
 

@@ -8,7 +8,7 @@ import { titleCase } from "../../services/helpers";
 import { pick, relId } from "../schedules/scheduleUtils";
 import PublishResults from "./PublishResults";
 
-const RESULT_STYLES = { pass: "bg-green-100 text-green-700", passed: "bg-green-100 text-green-700", fail: "bg-red-100 text-red-700", failed: "bg-red-100 text-red-700" };
+const RESULT_STYLES = { pass: "bg-emerald-100 text-emerald-700", passed: "bg-emerald-100 text-emerald-700", fail: "bg-red-100 text-red-700", failed: "bg-red-100 text-red-700" };
 
 // GET /exams/:examId/results  ·  publish / unpublish
 const ExamResults = () => {
@@ -83,7 +83,7 @@ const ExamResults = () => {
 
   return (
     <div>
-      <Link to="/exam-results" className="inline-flex items-center gap-1.5 text-sm text-gray-600 hover:text-green-700 mb-3">
+      <Link to="/exam-results" className="inline-flex items-center gap-1.5 text-sm text-gray-600 hover:text-sky-700 mb-3">
         <ArrowLeft size={16} /> Open another exam
       </Link>
 
@@ -94,7 +94,7 @@ const ExamResults = () => {
             {data.published !== undefined && (
               <span
                 className={`px-2.5 py-1 rounded-full text-xs font-medium ${
-                  data.published ? "bg-green-100 text-green-700" : "bg-amber-100 text-amber-700"
+                  data.published ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"
                 }`}
               >
                 {data.published ? "Published" : "Not published"}
@@ -120,7 +120,7 @@ const ExamResults = () => {
           )}
           <button
             onClick={() => setShowPublish(true)}
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-[#16A34A] text-white font-medium hover:bg-[#15803D]"
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-[#0EA5E9] text-white font-medium hover:bg-[#0284C7]"
           >
             <Send size={16} /> {data.published ? "Update & publish" : "Publish results"}
           </button>
@@ -128,7 +128,7 @@ const ExamResults = () => {
       </div>
 
       {notice && (
-        <div className="mb-4 rounded-lg bg-green-50 border border-green-200 text-green-700 text-sm px-4 py-3 flex justify-between">
+        <div className="mb-4 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm px-4 py-3 flex justify-between">
           <span>{notice}</span>
           <button onClick={() => setNotice("")} aria-label="Dismiss">×</button>
         </div>
@@ -137,7 +137,7 @@ const ExamResults = () => {
 
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-x-auto">
         <table className="w-full text-sm text-left">
-          <thead className="bg-gray-50 text-gray-600">
+          <thead className="bg-[#0B1437] text-white">
             <tr>
               <th className="px-4 py-3 font-medium">Student</th>
               <th className="px-4 py-3 font-medium">Marks</th>

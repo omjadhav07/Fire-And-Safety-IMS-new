@@ -58,7 +58,7 @@ const PublishResults = ({ examId, rows, maxMarks, onClose, onPublished }) => {
 
         <div className="max-h-80 overflow-y-auto rounded-xl border border-gray-100">
           <table className="w-full text-sm text-left">
-            <thead className="bg-gray-50 text-gray-600 sticky top-0">
+            <thead className="bg-[#0B1437] text-white sticky top-0">
               <tr>
                 <th className="px-4 py-2.5 font-medium">Student</th>
                 <th className="px-4 py-2.5 font-medium w-32">Marks</th>
@@ -125,7 +125,7 @@ const PublishResults = ({ examId, rows, maxMarks, onClose, onPublished }) => {
           <button
             type="submit"
             disabled={saving}
-            className="px-5 py-2.5 rounded-lg bg-[#16A34A] text-white font-medium hover:bg-[#15803D] disabled:opacity-60"
+            className="px-5 py-2.5 rounded-lg bg-[#0EA5E9] text-white font-medium hover:bg-[#0284C7] disabled:opacity-60"
           >
             {saving ? "Publishing..." : "Publish results"}
           </button>

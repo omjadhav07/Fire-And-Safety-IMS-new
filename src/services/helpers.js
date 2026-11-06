@@ -27,12 +27,12 @@ export const titleCase = (s) =>
   s ? String(s).replace(/[_-]/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()) : "-";
 
 export const inputClass =
-  "w-full px-3 py-2.5 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#16A34A]/40 focus:border-[#16A34A]";
+  "w-full px-3 py-2.5 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#0EA5E9]/40 focus:border-[#0EA5E9]";
 
 const BADGES = {
-  active: "bg-green-100 text-green-700",
-  available: "bg-green-100 text-green-700",
-  returned: "bg-green-100 text-green-700",
+  active: "bg-emerald-100 text-emerald-700",
+  available: "bg-emerald-100 text-emerald-700",
+  returned: "bg-emerald-100 text-emerald-700",
   issued: "bg-blue-100 text-blue-700",
   overdue: "bg-red-100 text-red-700",
   retired: "bg-gray-200 text-gray-600",

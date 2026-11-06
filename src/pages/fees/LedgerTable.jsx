@@ -11,7 +11,7 @@ const LedgerTable = ({ ledger }) => {
   return (
     <div className="overflow-x-auto">
       <table className="w-full text-sm text-left">
-        <thead className="bg-gray-50 text-gray-600">
+        <thead className="bg-[#0B1437] text-white">
           <tr>
             <th className="px-4 py-3 font-medium">Fee</th>
             <th className="px-4 py-3 font-medium text-right">Due</th>
@@ -29,7 +29,7 @@ const LedgerTable = ({ ledger }) => {
                 {l.exam && <span className="text-xs text-amber-700">Required for exam</span>}
               </td>
               <td className="px-4 py-3 text-right whitespace-nowrap">{inr(l.due)}</td>
-              <td className="px-4 py-3 text-right whitespace-nowrap text-green-700">{inr(l.paid)}</td>
+              <td className="px-4 py-3 text-right whitespace-nowrap text-sky-700">{inr(l.paid)}</td>
               <td className={`px-4 py-3 text-right whitespace-nowrap font-medium ${l.balance > 0 ? "text-red-600" : "text-gray-500"}`}>
                 {inr(l.balance)}
               </td>
@@ -46,7 +46,7 @@ const LedgerTable = ({ ledger }) => {
           <tr className="border-t-2 border-gray-100 font-semibold text-gray-900">
             <td className="px-4 py-3">Total</td>
             <td className="px-4 py-3 text-right">{inr(totals.due)}</td>
-            <td className="px-4 py-3 text-right text-green-700">{inr(totals.paid)}</td>
+            <td className="px-4 py-3 text-right text-sky-700">{inr(totals.paid)}</td>
             <td className="px-4 py-3 text-right text-red-600">{inr(totals.balance)}</td>
             <td colSpan={2} />
           </tr>

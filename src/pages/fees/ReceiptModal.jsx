@@ -214,7 +214,7 @@ const ReceiptModal = ({ paymentId, onClose }) => {
           {r.allocations.length > 0 && (
             <div className="mt-3 rounded-xl border border-gray-100 overflow-hidden">
               <table className="w-full text-sm text-left">
-                <thead className="bg-gray-50 text-gray-600">
+                <thead className="bg-[#0B1437] text-white">
                   <tr>
                     <th className="px-4 py-2.5 font-medium">Paid towards</th>
                     <th className="px-4 py-2.5 font-medium text-right">Amount</th>
@@ -232,9 +232,9 @@ const ReceiptModal = ({ paymentId, onClose }) => {
             </div>
           )}
 
-          <div className="mt-4 flex items-center justify-between rounded-xl bg-green-50 px-4 py-3">
-            <span className="text-sm font-medium text-green-800">Amount paid</span>
-            <span className="text-xl font-bold text-green-800">{inr(r.amount)}</span>
+          <div className="mt-4 flex items-center justify-between rounded-xl bg-sky-50 px-4 py-3">
+            <span className="text-sm font-medium text-sky-800">Amount paid</span>
+            <span className="text-xl font-bold text-sky-800">{inr(r.amount)}</span>
           </div>
           {r.balanceAfter !== null && r.balanceAfter !== undefined && (
             <p className="mt-2 text-sm text-gray-600 text-right">

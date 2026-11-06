@@ -246,7 +246,7 @@ const Fees = () => {
           </button>
           <button
             onClick={() => setPayment({ student: null })}
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-[#16A34A] text-white font-medium hover:bg-[#15803D]"
+            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-[#0EA5E9] text-white font-medium hover:bg-[#0284C7]"
           >
             <Plus size={18} /> Record payment
           </button>
@@ -260,7 +260,7 @@ const Fees = () => {
               key={key}
               onClick={() => setTab(key)}
               className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${
-                tab === key ? "bg-white text-green-700 shadow-sm" : "text-gray-600 hover:text-gray-900"
+                tab === key ? "bg-white text-sky-700 shadow-sm" : "text-gray-600 hover:text-gray-900"
               }`}
             >
               {label}
@@ -282,7 +282,7 @@ const Fees = () => {
       </div>
 
       {notice && (
-        <div className="mb-4 rounded-lg bg-green-50 border border-green-200 text-green-700 text-sm px-4 py-3 flex justify-between">
+        <div className="mb-4 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm px-4 py-3 flex justify-between">
           <span>{notice}</span>
           <button onClick={() => setNotice("")} aria-label="Dismiss">×</button>
         </div>
@@ -294,7 +294,7 @@ const Fees = () => {
       {tab === "pending" && (
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-x-auto">
           <table className="w-full text-sm text-left">
-            <thead className="bg-gray-50 text-gray-600">
+            <thead className="bg-[#0B1437] text-white">
               <tr>
                 <th className="px-4 py-3 font-medium">Student</th>
                 <th className="px-4 py-3 font-medium">Course</th>
@@ -328,7 +328,7 @@ const Fees = () => {
                         <button
                           onClick={() => setPayment({ student: r.student })}
                           disabled={!feeStudentId(r.student)}
-                          className="px-2.5 py-1.5 rounded-lg text-green-700 hover:bg-green-50 text-xs font-medium disabled:opacity-40"
+                          className="px-2.5 py-1.5 rounded-lg text-sky-700 hover:bg-sky-50 text-xs font-medium disabled:opacity-40"
                         >
                           Collect
                         </button>
@@ -373,7 +373,7 @@ const Fees = () => {
           </p>
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-x-auto">
             <table className="w-full text-sm text-left">
-              <thead className="bg-gray-50 text-gray-600">
+              <thead className="bg-[#0B1437] text-white">
                 <tr>
                   <th className="px-4 py-3 font-medium">Student</th>
                   <th className="px-4 py-3 font-medium text-right">Amount</th>

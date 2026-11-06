@@ -192,7 +192,7 @@ const ClassTestMarks = () => {
 
   return (
     <div>
-      <Link to="/class-tests" className="inline-flex items-center gap-1.5 text-sm text-gray-600 hover:text-green-700 mb-3">
+      <Link to="/class-tests" className="inline-flex items-center gap-1.5 text-sm text-gray-600 hover:text-sky-700 mb-3">
         <ArrowLeft size={16} /> Back to class tests
       </Link>
 
@@ -243,7 +243,7 @@ const ClassTestMarks = () => {
             </div>
 
             {notice && (
-              <div className="mb-4 rounded-lg bg-green-50 border border-green-200 text-green-700 text-sm px-4 py-3 flex justify-between">
+              <div className="mb-4 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm px-4 py-3 flex justify-between">
                 <span>{notice}</span>
                 <button onClick={() => setNotice("")} aria-label="Dismiss">×</button>
               </div>
@@ -255,7 +255,7 @@ const ClassTestMarks = () => {
                   key={key}
                   onClick={() => setTab(key)}
                   className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${
-                    tab === key ? "bg-white text-green-700 shadow-sm" : "text-gray-600 hover:text-gray-900"
+                    tab === key ? "bg-white text-sky-700 shadow-sm" : "text-gray-600 hover:text-gray-900"
                   }`}
                 >
                   {label}
@@ -268,7 +268,7 @@ const ClassTestMarks = () => {
                 <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-3">
                   <p className="text-sm text-gray-600">
                     {summary.entered} of {students.length} marked ·{" "}
-                    <span className="text-green-700">{summary.passed} passed</span> ·{" "}
+                    <span className="text-sky-700">{summary.passed} passed</span> ·{" "}
                     <span className="text-red-600">{summary.failed} failed</span>
                   </p>
                   <div className="flex items-center gap-4">
@@ -277,14 +277,14 @@ const ClassTestMarks = () => {
                         type="checkbox"
                         checked={includeRemarks}
                         onChange={(e) => setIncludeRemarks(e.target.checked)}
-                        className="w-4 h-4 accent-[#16A34A]"
+                        className="w-4 h-4 accent-[#0EA5E9]"
                       />
                       Include remarks in export
                     </label>
                     <button
                       onClick={saveAll}
                       disabled={saving || unsaved === 0}
-                      className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-[#16A34A] text-white font-medium hover:bg-[#15803D] disabled:opacity-50"
+                      className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg bg-[#0EA5E9] text-white font-medium hover:bg-[#0284C7] disabled:opacity-50"
                     >
                       <Save size={16} /> {saving ? "Saving..." : `Save all${unsaved ? ` (${unsaved})` : ""}`}
                     </button>
@@ -293,7 +293,7 @@ const ClassTestMarks = () => {
 
                 <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-x-auto">
                   <table className="w-full text-sm text-left">
-                    <thead className="bg-gray-50 text-gray-600">
+                    <thead className="bg-[#0B1437] text-white">
                       <tr>
                         <th className="px-4 py-3 font-medium">Student</th>
                         <th className="px-4 py-3 font-medium w-36">Marks (/{test.max_marks})</th>
@@ -346,7 +346,7 @@ const ClassTestMarks = () => {
                                 {result && (
                                   <span
                                     className={`px-2.5 py-1 rounded-full text-xs font-medium ${
-                                      result === "pass" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
+                                      result === "pass" ? "bg-emerald-100 text-emerald-700" : "bg-red-100 text-red-700"
                                     }`}
                                   >
                                     {titleCase(result)}
@@ -359,7 +359,7 @@ const ClassTestMarks = () => {
                                     onClick={() => saveOne(s.id)}
                                     disabled={busyId === s.id || !e.dirty || e.marks === ""}
                                     title="Save this mark"
-                                    className="p-2 rounded-lg text-gray-500 hover:bg-green-50 hover:text-green-700 disabled:opacity-30"
+                                    className="p-2 rounded-lg text-gray-500 hover:bg-sky-50 hover:text-sky-700 disabled:opacity-30"
                                   >
                                     <Save size={16} />
                                   </button>

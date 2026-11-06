@@ -14,7 +14,7 @@ const ROLE_OPTIONS = [
 const initialForm = { name: "", email: "", password: "", role: "faculty", phone: "" };
 
 const inputClass =
-  "w-full px-3 py-2.5 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#D32F2F]/40 focus:border-[#D32F2F]";
+  "w-full px-3 py-2.5 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#0EA5E9]/40 focus:border-[#0EA5E9]";
 
 // "Register" = Super Admin creates a new staff user (POST /users)
 const Register = () => {
@@ -84,7 +84,7 @@ const Register = () => {
           </div>
         )}
         {success && (
-          <div className="mb-4 rounded-lg bg-green-50 border border-green-200 text-green-700 text-sm px-4 py-3">
+          <div className="mb-4 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm px-4 py-3">
             {success}
           </div>
         )}
@@ -155,7 +155,7 @@ const Register = () => {
             <button
               type="submit"
               disabled={loading}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-[#D32F2F] text-white font-medium hover:bg-[#B71C1C] disabled:opacity-60 disabled:cursor-not-allowed"
+              className="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-[#0EA5E9] text-white font-medium hover:bg-[#0284C7] disabled:opacity-60 disabled:cursor-not-allowed"
             >
               <UserPlus size={18} />
               {loading ? "Creating..." : "Create user"}

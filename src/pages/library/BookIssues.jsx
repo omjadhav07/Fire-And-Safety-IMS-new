@@ -1,8 +1,4 @@
-git add -A
-git commit -m "Update IMS modules and exam management"
-git push -u origin mastergit add -A
-git commit -m "Update IMS modules and exam management"
-git push -u origin masterimport React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Plus, RefreshCw } from "lucide-react";
 import { getIssues, getOverdueBooks, getBooks, issueBook } from "./libraryService";
@@ -152,7 +148,7 @@ const Issues = () => {
           </button>
           <button
             onClick={openIssue}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-[#16A34A] text-white font-medium hover:bg-[#15803D]"
+            className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-[#0EA5E9] text-white font-medium hover:bg-[#0284C7]"
           >
             <Plus size={18} /> Issue book
           </button>
@@ -166,7 +162,7 @@ const Issues = () => {
               key={t.key}
               onClick={() => switchTab(t.key)}
               className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${
-                tab === t.key ? "bg-white text-green-700 shadow-sm" : "text-gray-600 hover:text-gray-900"
+                tab === t.key ? "bg-white text-sky-700 shadow-sm" : "text-gray-600 hover:text-gray-900"
               }`}
             >
               {t.label}
@@ -180,7 +176,7 @@ const Issues = () => {
       </div>
 
       {notice && (
-        <div className="mb-4 rounded-lg bg-green-50 border border-green-200 text-green-700 text-sm px-4 py-3 flex justify-between">
+        <div className="mb-4 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm px-4 py-3 flex justify-between">
           <span>{notice}</span>
           <button onClick={() => setNotice("")} aria-label="Dismiss">×</button>
         </div>
@@ -191,7 +187,7 @@ const Issues = () => {
 
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-x-auto">
         <table className="w-full text-sm text-left">
-          <thead className="bg-gray-50 text-gray-600">
+          <thead className="bg-[#0B1437] text-white">
             <tr>
               <th className="px-4 py-3 font-medium">Book</th>
               <th className="px-4 py-3 font-medium">Student</th>
@@ -224,7 +220,7 @@ const Issues = () => {
                       {sid ? (
                         <Link
                           to={`/library/students/${sid}/history`}
-                          className="text-green-700 hover:underline"
+                          className="text-sky-700 hover:underline"
                           title="View student history"
                         >
                           {issueStudentName(i) || studentNames[sid] || "Unknown student"}
@@ -295,7 +291,7 @@ const Issues = () => {
               <button
                 type="submit"
                 disabled={saving}
-                className="px-5 py-2.5 rounded-lg bg-[#16A34A] text-white font-medium hover:bg-[#15803D] disabled:opacity-60"
+                className="px-5 py-2.5 rounded-lg bg-[#0EA5E9] text-white font-medium hover:bg-[#0284C7] disabled:opacity-60"
               >
                 {saving ? "Issuing..." : "Issue book"}
               </button>

@@ -5,7 +5,7 @@ import { getErrorMessage } from "../../services/api";
 
 const LIMIT = 20;
 const inputClass =
-  "px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-[#16A34A]/40 focus:border-[#16A34A]";
+  "px-3 py-2 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-[#0EA5E9]/40 focus:border-[#0EA5E9]";
 
 const getId = (l) => l.id || l._id;
 const getUser = (l) => {
@@ -24,7 +24,7 @@ const formatDate = (v) => {
 
 const actionStyle = (a) => {
   const x = String(a || "").toLowerCase();
-  if (["create", "login", "publish"].includes(x)) return "bg-green-100 text-green-700";
+  if (["create", "login", "publish"].includes(x)) return "bg-emerald-100 text-emerald-700";
   if (["update", "override"].includes(x)) return "bg-blue-100 text-blue-700";
   if (["cancel", "delete"].includes(x)) return "bg-red-100 text-red-700";
   return "bg-gray-100 text-gray-700";
@@ -136,7 +136,7 @@ const AuditLogs = () => {
           <label className="block text-xs text-gray-500 mb-1">To</label>
           <input type="date" value={filters.to} min={filters.from || undefined} onChange={(e) => setFilters({ ...filters, to: e.target.value })} className={inputClass} />
         </div>
-        <button type="submit" className="px-4 py-2 rounded-lg bg-[#16A34A] text-white text-sm font-medium hover:bg-[#15803D]">
+        <button type="submit" className="px-4 py-2 rounded-lg bg-[#0EA5E9] text-white text-sm font-medium hover:bg-[#0284C7]">
           Apply
         </button>
         <button type="button" onClick={clearFilters} className="px-4 py-2 rounded-lg border border-gray-300 text-sm text-gray-700 hover:bg-gray-50">
@@ -150,7 +150,7 @@ const AuditLogs = () => {
 
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-x-auto">
         <table className="w-full text-sm text-left">
-          <thead className="bg-gray-50 text-gray-600">
+          <thead className="bg-[#0B1437] text-white">
             <tr>
               <th className="px-4 py-3 font-medium">Time</th>
               <th className="px-4 py-3 font-medium">User</th>
@@ -194,7 +194,7 @@ const AuditLogs = () => {
                       <td className="px-4 py-3 text-gray-600">{l.ip_address || l.ipAddress || "-"}</td>
                       <td className="px-4 py-3 text-right">
                         {hasDetails ? (
-                          <button onClick={() => setOpenId(openId === id ? null : id)} className="text-green-700 hover:underline">
+                          <button onClick={() => setOpenId(openId === id ? null : id)} className="text-sky-700 hover:underline">
                             {openId === id ? "Hide" : "View"}
                           </button>
                         ) : (

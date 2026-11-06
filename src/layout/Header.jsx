@@ -1,8 +1,11 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { Menu, ChevronDown, LogOut, Mail, Phone, Flame } from 'lucide-react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
+import { Menu, ChevronDown, LogOut, Mail, Phone, Search, CornerDownLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import { logoutUser } from '../pages/auth/authService';
+import { pagesForRole } from './menuConfig';
+import { getCurrentRole } from '../config/permissions';
+import { Avatar } from '../components/ui';
 
 const formatRole = (role) =>
   String(role || '')
@@ -10,10 +13,13 @@ const formatRole = (role) =>
     .toLowerCase()
     .replace(/\b\w/g, (l) => l.toUpperCase());
 
-const Header = ({ onMenuClick }) => {
+const Header = ({ onMenuClick, sidebarOpen }) => {
   const navigate = useNavigate();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const profileRef = useRef(null);
+  const searchRef = useRef(null);
+  const [pageQuery, setPageQuery] = useState('');
+  const [searchOpen, setSearchOpen] = useState(false);
 
   // Show the user saved at login straight away, then refresh from /auth/me
   const [userData, setUserData] = useState(() => {
@@ -27,6 +33,7 @@ const Header = ({ onMenuClick }) => {
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (profileRef.current && !profileRef.current.contains(event.target)) setIsProfileOpen(false);
+      if (searchRef.current && !searchRef.current.contains(event.target)) setSearchOpen(false);
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
@@ -60,57 +67,101 @@ const Header = ({ onMenuClick }) => {
     typeof userData?.role === 'string' ? userData.role : userData?.role?.name || userData?.roles?.[0]?.name;
   const displayName = userData?.name || userData?.email?.split('@')[0] || 'User';
   const userRole = roleValue ? formatRole(roleValue) : 'User';
-  const initials = displayName.charAt(0).toUpperCase();
+
+  // "Search pages..." lists only the pages this role can open
+  const pages = useMemo(() => pagesForRole(getCurrentRole()), []);
+  const matches = useMemo(() => {
+    const q = pageQuery.trim().toLowerCase();
+    const list = q ? pages.filter((p) => `${p.label} ${p.group}`.toLowerCase().includes(q)) : pages;
+    return list.slice(0, 8);
+  }, [pages, pageQuery]);
+
+  const goTo = (path) => {
+    setPageQuery('');
+    setSearchOpen(false);
+    navigate(path);
+  };
 
   return (
-    <header className="fixed top-0 left-0 right-0 h-16 z-40 bg-white border-b border-gray-200">
-      <div className="h-full px-4 flex items-center justify-between">
-        {/* Left: logo + menu toggle */}
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 lg:w-60">
-            <div className="w-9 h-9 rounded-lg bg-green-600 text-white flex items-center justify-center">
-              <Flame size={20} />
-            </div>
-            <span className="text-lg font-extrabold tracking-tight text-green-700 hidden sm:block">FIRE SAFETY IMS</span>
+    <header
+      className={`fixed top-0 right-0 left-0 h-16 z-30 bg-white border-b border-slate-200 transition-all duration-300 ${
+        sidebarOpen ? 'lg:left-64' : 'lg:left-0'
+      }`}
+    >
+      <div className="h-full px-4 flex items-center gap-3">
+        <button onClick={onMenuClick} className="p-2 rounded-lg text-slate-500 hover:bg-slate-100" aria-label="Toggle menu">
+          <Menu size={22} />
+        </button>
+
+        {/* Centre: search pages */}
+        <div className="flex-1 flex justify-center">
+          <div className="relative w-full max-w-md" ref={searchRef}>
+            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+            <input
+              value={pageQuery}
+              onChange={(e) => {
+                setPageQuery(e.target.value);
+                setSearchOpen(true);
+              }}
+              onFocus={() => setSearchOpen(true)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && matches[0]) goTo(matches[0].path);
+                if (e.key === 'Escape') setSearchOpen(false);
+              }}
+              placeholder="Search pages..."
+              className="w-full pl-9 pr-3 py-2 text-sm rounded-full bg-slate-100 border border-transparent focus:bg-white focus:outline-none focus:border-[#0EA5E9] focus:ring-2 focus:ring-[#0EA5E9]/20"
+            />
+            {searchOpen && (
+              <div className="absolute left-0 right-0 mt-2 rounded-xl border border-slate-200 bg-white shadow-lg py-1 overflow-hidden">
+                {matches.length === 0 ? (
+                  <p className="px-4 py-3 text-sm text-slate-500">No page found</p>
+                ) : (
+                  matches.map((p, i) => (
+                    <button
+                      key={p.path}
+                      onClick={() => goTo(p.path)}
+                      className="w-full flex items-center justify-between px-4 py-2 text-sm text-left hover:bg-slate-50"
+                    >
+                      <span>
+                        <span className="font-medium text-slate-800">{p.label}</span>
+                        <span className="ml-2 text-xs text-slate-400">{p.group}</span>
+                      </span>
+                      {i === 0 && pageQuery && <CornerDownLeft size={13} className="text-slate-400" />}
+                    </button>
+                  ))
+                )}
+              </div>
+            )}
           </div>
-          <button
-            onClick={onMenuClick}
-            className="p-2 rounded-lg text-gray-500 hover:bg-gray-100"
-            aria-label="Toggle menu"
-          >
-            <Menu size={22} />
-          </button>
         </div>
 
         {/* Right: profile */}
         <div className="relative" ref={profileRef}>
           <button
             onClick={() => setIsProfileOpen((o) => !o)}
-            className="flex items-center gap-3 rounded-lg px-2 py-1.5 hover:bg-gray-50"
+            className="flex items-center gap-3 rounded-lg px-2 py-1.5 hover:bg-slate-50"
           >
-            <div className="w-9 h-9 rounded-full bg-green-100 text-green-700 font-semibold flex items-center justify-center">
-              {initials}
-            </div>
+            <Avatar name={displayName} />
             <div className="text-left hidden sm:block">
-              <p className="text-sm font-semibold text-gray-800 leading-tight">{displayName}</p>
-              <p className="text-[11px] text-gray-500 leading-tight">{userRole}</p>
+              <p className="text-sm font-semibold text-slate-800 leading-tight">{displayName}</p>
+              <p className="text-[11px] text-slate-500 leading-tight">{userRole}</p>
             </div>
-            <ChevronDown size={14} className="text-gray-400 hidden sm:block" />
+            <ChevronDown size={14} className="text-slate-400 hidden sm:block" />
           </button>
 
           {isProfileOpen && (
-            <div className="absolute right-0 mt-2 w-72 bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
-              <div className="px-4 py-4 border-b border-gray-100 bg-gray-50">
-                <p className="text-sm font-semibold text-gray-800">{displayName}</p>
-                <p className="text-xs text-green-700 font-medium mt-0.5">{userRole}</p>
+            <div className="absolute right-0 mt-2 w-72 bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden">
+              <div className="px-4 py-4 border-b border-slate-100 bg-slate-50">
+                <p className="text-sm font-semibold text-slate-800">{displayName}</p>
+                <p className="text-xs text-[#0284C7] font-medium mt-0.5">{userRole}</p>
               </div>
-              <div className="px-4 py-3 border-b border-gray-100 space-y-2 text-xs text-gray-600">
+              <div className="px-4 py-3 border-b border-slate-100 space-y-2 text-xs text-slate-600">
                 <div className="flex items-center gap-2">
-                  <Mail size={13} className="text-gray-400" />
+                  <Mail size={13} className="text-slate-400" />
                   {userData?.email || 'No email'}
                 </div>
                 <div className="flex items-center gap-2">
-                  <Phone size={13} className="text-gray-400" />
+                  <Phone size={13} className="text-slate-400" />
                   {userData?.phone || userData?.mobile || 'Not provided'}
                 </div>
               </div>

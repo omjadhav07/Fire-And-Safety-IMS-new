@@ -92,7 +92,7 @@
 //         <button
 //           type="submit"
 //           disabled={saving}
-//           className="px-5 py-2.5 rounded-lg bg-[#16A34A] text-white font-medium hover:bg-[#15803D] disabled:opacity-60"
+//           className="px-5 py-2.5 rounded-lg bg-[#0EA5E9] text-white font-medium hover:bg-[#0284C7] disabled:opacity-60"
 //         >
 //           {saving ? "Saving..." : editing ? "Save changes" : "Schedule class"}
 //         </button>
@@ -200,7 +200,7 @@ const CreateSchedule = ({ assignedFacultyIds, batchChosen, changeCourse, changeF
         <button
           type="submit"
           disabled={saving || !form.faculty_id}
-          className="px-5 py-2.5 rounded-lg bg-[#16A34A] text-white font-medium hover:bg-[#15803D] disabled:opacity-60"
+          className="px-5 py-2.5 rounded-lg bg-[#0EA5E9] text-white font-medium hover:bg-[#0284C7] disabled:opacity-60"
         >
           {saving ? "Saving..." : editing ? "Save changes" : "Schedule class"}
         </button>

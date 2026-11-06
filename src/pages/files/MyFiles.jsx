@@ -171,7 +171,7 @@ const Files = () => {
       </div>
 
       {notice && (
-        <div className="mb-4 rounded-lg bg-green-50 border border-green-200 text-green-700 text-sm px-4 py-3 flex justify-between">
+        <div className="mb-4 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm px-4 py-3 flex justify-between">
           <span>{notice}</span>
           <button onClick={() => setNotice("")} aria-label="Dismiss">×</button>
         </div>
@@ -193,13 +193,13 @@ const Files = () => {
           pickFile(e.dataTransfer.files?.[0]);
         }}
         className={`bg-white rounded-2xl border-2 border-dashed p-6 mb-6 text-center transition-colors ${
-          dragOver ? "border-green-500 bg-green-50" : "border-gray-300"
+          dragOver ? "border-sky-500 bg-sky-50" : "border-gray-300"
         }`}
       >
-        <UploadCloud size={36} className="mx-auto text-green-600" />
+        <UploadCloud size={36} className="mx-auto text-sky-600" />
         <p className="mt-2 text-sm text-gray-700">
           Drag a file here or{" "}
-          <button type="button" onClick={() => inputRef.current?.click()} className="text-green-700 font-medium hover:underline">
+          <button type="button" onClick={() => inputRef.current?.click()} className="text-sky-700 font-medium hover:underline">
             browse
           </button>
         </p>
@@ -220,13 +220,13 @@ const Files = () => {
             </div>
             {uploading && (
               <div className="mt-2 h-2 rounded-full bg-gray-200 overflow-hidden">
-                <div className="h-full bg-green-600 transition-all" style={{ width: `${progress}%` }} />
+                <div className="h-full bg-sky-600 transition-all" style={{ width: `${progress}%` }} />
               </div>
             )}
             <button
               onClick={handleUpload}
               disabled={uploading}
-              className="mt-3 w-full py-2.5 rounded-lg bg-[#16A34A] text-white font-medium hover:bg-[#15803D] disabled:opacity-60"
+              className="mt-3 w-full py-2.5 rounded-lg bg-[#0EA5E9] text-white font-medium hover:bg-[#0284C7] disabled:opacity-60"
             >
               {uploading ? `Uploading... ${progress}%` : "Upload file"}
             </button>
@@ -237,7 +237,7 @@ const Files = () => {
       {/* File list */}
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-x-auto">
         <table className="w-full text-sm text-left">
-          <thead className="bg-gray-50 text-gray-600">
+          <thead className="bg-[#0B1437] text-white">
             <tr>
               <th className="px-4 py-3 font-medium">File</th>
               <th className="px-4 py-3 font-medium">Type</th>
@@ -263,7 +263,7 @@ const Files = () => {
                   <tr key={getId(f) || i} className="hover:bg-gray-50">
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
-                        {isImage ? <ImageIcon size={18} className="text-green-600" /> : <FileText size={18} className="text-red-500" />}
+                        {isImage ? <ImageIcon size={18} className="text-sky-600" /> : <FileText size={18} className="text-red-500" />}
                         <span className="font-medium text-gray-900">{getName(f)}</span>
                       </div>
                     </td>

@@ -13,7 +13,7 @@ import CreateExam from "./CreateExam";
 
 const LIMIT = 10;
 const WINDOW_STYLES = {
-  open: "bg-green-100 text-green-700",
+  open: "bg-emerald-100 text-emerald-700",
   upcoming: "bg-blue-100 text-blue-700",
   closed: "bg-gray-100 text-gray-600",
 };
@@ -182,7 +182,7 @@ const ManageExams = () => {
                 setEditing(null);
                 setShowForm(true);
               }}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-[#16A34A] text-white font-medium hover:bg-[#15803D]"
+              className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-[#0EA5E9] text-white font-medium hover:bg-[#0284C7]"
             >
               <Plus size={18} /> New exam
             </button>
@@ -250,7 +250,7 @@ const ManageExams = () => {
             <input type="date" value={filters.end_date} onChange={setFilter("end_date")} className={`${inputClass} bg-white`} />
           </label>
           {hasFilters && (
-            <button onClick={clearFilters} className="text-sm text-green-700 hover:underline whitespace-nowrap">
+            <button onClick={clearFilters} className="text-sm text-sky-700 hover:underline whitespace-nowrap">
               Clear filters
             </button>
           )}
@@ -258,7 +258,7 @@ const ManageExams = () => {
       </div>
 
       {notice && (
-        <div className="mb-4 rounded-lg bg-green-50 border border-green-200 text-green-700 text-sm px-4 py-3 flex justify-between">
+        <div className="mb-4 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm px-4 py-3 flex justify-between">
           <span>{notice}</span>
           <button onClick={() => setNotice("")} aria-label="Dismiss">×</button>
         </div>
@@ -267,7 +267,7 @@ const ManageExams = () => {
 
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-x-auto">
         <table className="w-full text-sm text-left">
-          <thead className="bg-gray-50 text-gray-600">
+          <thead className="bg-[#0B1437] text-white">
             <tr>
               <th className="px-4 py-3 font-medium">Exam</th>
               <th className="px-4 py-3 font-medium">Course / Batch</th>
@@ -297,7 +297,7 @@ const ManageExams = () => {
                 return (
                   <tr key={getId(x) || i} className="hover:bg-gray-50">
                     <td className="px-4 py-3">
-                      <button onClick={() => navigate(`/exams/${getId(x)}`)} className="text-left font-medium text-gray-900 hover:text-green-700">
+                      <button onClick={() => navigate(`/exams/${getId(x)}`)} className="text-left font-medium text-gray-900 hover:text-sky-700">
                         {x.title}
                       </button>
                       <p className="text-xs text-gray-500">
@@ -327,7 +327,7 @@ const ManageExams = () => {
                     <td className="px-4 py-3">
                       <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${examStatusClass(status)}`}>{titleCase(status)}</span>
                       {published === true && (
-                        <span className="ml-1.5 px-2 py-0.5 rounded-full text-[11px] font-medium bg-green-100 text-green-700">Results published</span>
+                        <span className="ml-1.5 px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-100 text-emerald-700">Results published</span>
                       )}
                     </td>
                     <td className="px-4 py-3">
@@ -335,7 +335,7 @@ const ManageExams = () => {
                         <button
                           onClick={() => navigate(`/exams/${getId(x)}`)}
                           title={canManage ? "Enter marks, review and publish results" : "View marks and results"}
-                          className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-green-700 hover:bg-green-50 text-xs font-medium"
+                          className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-sky-700 hover:bg-sky-50 text-xs font-medium"
                         >
                           <ClipboardCheck size={15} /> {canManage ? "Marks" : "View"}
                         </button>

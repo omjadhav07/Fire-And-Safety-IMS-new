@@ -40,7 +40,7 @@ export const ObjectTable = ({ rows, maxColumns = 7 }) => {
   return (
     <div className="overflow-x-auto">
       <table className="w-full text-sm text-left">
-        <thead className="bg-gray-50 text-gray-600">
+        <thead className="bg-[#0B1437] text-white">
           <tr>
             {cols.map((k) => (
               <th key={k} className="px-4 py-3 font-medium whitespace-nowrap">{labelOf(k)}</th>

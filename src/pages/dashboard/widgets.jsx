@@ -1,63 +1,36 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
-  Users, UserCheck, GraduationCap, BookOpen, ClipboardList, ClipboardCheck, IndianRupee, Wallet,
-  CalendarDays, Library, AlertTriangle, Layers, BookMarked,
+  Users, GraduationCap, BookOpen, IndianRupee, Wallet, Library,
+  BookMarked, AlertTriangle, Layers, Activity, UserPlus, CreditCard, ClipboardList, CalendarDays
 } from 'lucide-react';
-import { getUsers } from '../users/userService';
-import { getCourses, getFeeComponents } from '../courses/courseService';
-import { getStudents } from '../students/studentService';
-import { getEnquiries } from '../enquiries/enquiryService';
-import { statusClass as enquiryStatusClass } from '../enquiries/enquiryUtils';
-import { getPendingFees, getMyFees } from '../fees/feeService';
-import { num, objectIdOf, studentNameOf } from '../fees/feeUtils';
-import { getBooks, getIssues, getOverdueBooks, getCategories } from '../library/libraryService';
-import { getSchedules } from '../schedules/classScheduleService';
-import { pick, relName, fmtTime, roleOf, today } from '../schedules/scheduleUtils';
-import { getClassTests } from '../classTests/classTestService';
-import { getNotices } from '../notices/noticeService';
-import { getAssignments } from '../faculty/facultyAssignmentService';
-import { fmtDate, titleCase, daysOverdue } from '../../services/helpers';
+import {
+  getDashboardSummary, getCourseWiseStudents, getFeesTrend, getRecentActivity,
+} from './dashboardService';
+import { fmtDate } from '../../services/helpers';
 
-/* ───────────── loading ───────────── */
-
-// Widgets on one page that need the same data share a single request
 const inflight = new Map();
 const shared = (key, loader) => {
   if (!inflight.has(key)) inflight.set(key, loader().finally(() => inflight.delete(key)));
   return inflight.get(key);
 };
 
-// -> { loading, data, error }. A widget that fails shows "-" and never breaks the page.
 const useLoad = (key, loader) => {
   const [state, setState] = useState({ key: '', data: null, error: false });
   const loaderRef = useRef(loader);
-  useEffect(() => {
-    loaderRef.current = loader;
-  });
+  useEffect(() => { loaderRef.current = loader; });
   useEffect(() => {
     let cancelled = false;
     shared(key, () => loaderRef.current())
       .then((data) => !cancelled && setState({ key, data, error: false }))
       .catch(() => !cancelled && setState({ key, data: null, error: true }));
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, [key]);
   return { loading: state.key !== key, data: state.data, error: state.error };
 };
 
-const safe = (fn, fallback) => {
-  try {
-    return fn();
-  } catch {
-    return fallback;
-  }
-};
+const safe = (fn, fallback) => { try { return fn(); } catch { return fallback; } };
 
-/* ───────────── shared UI ───────────── */
-
-// Card with a coloured icon tile
 export const StatCard = ({ label, value, icon, tile, to }) => {
   const Icon = icon;
   const body = (
@@ -71,13 +44,7 @@ export const StatCard = ({ label, value, icon, tile, to }) => {
       </div>
     </div>
   );
-  return to ? (
-    <Link to={to} className="block hover:-translate-y-0.5 transition-transform">
-      {body}
-    </Link>
-  ) : (
-    body
-  );
+  return to ? <Link to={to} className="block hover:-translate-y-0.5 transition-transform">{body}</Link> : body;
 };
 
 const LoadStat = ({ label, k, loader, value, icon, tile, to }) => {
@@ -87,47 +54,18 @@ const LoadStat = ({ label, k, loader, value, icon, tile, to }) => {
 };
 
 const Panel = ({ title, to, linkLabel = 'View all', children }) => (
-  <div className="bg-white rounded-xl p-4 shadow-sm">
+  <div className="bg-white rounded-xl p-4 shadow-sm h-full flex flex-col">
     <div className="flex items-center justify-between mb-2">
       <h2 className="text-sm font-bold text-gray-900">{title}</h2>
-      {to && (
-        <Link to={to} className="text-xs text-green-700 hover:underline">
-          {linkLabel}
-        </Link>
-      )}
+      {to && <Link to={to} className="text-xs text-sky-700 hover:underline">{linkLabel}</Link>}
     </div>
-    {children}
+    <div className="flex-1 overflow-hidden">{children}</div>
   </div>
 );
 
-// List panel: loads data, turns it into rows with items(), draws each row with render()
-const LoadPanel = ({ title, k, loader, items, render, empty, to, linkLabel }) => {
-  const { loading, data, error } = useLoad(k, loader);
-  const rows = loading || error ? [] : safe(() => items(data), []);
-  return (
-    <Panel title={title} to={to} linkLabel={linkLabel}>
-      {loading ? (
-        <p className="text-xs text-gray-400">Loading...</p>
-      ) : error ? (
-        <p className="text-xs text-gray-400">Could not load this widget.</p>
-      ) : rows.length === 0 ? (
-        <p className="text-xs text-gray-400">{empty}</p>
-      ) : (
-        <ul className="divide-y divide-gray-100">
-          {rows.map((r, i) => (
-            <li key={r.id || r._id || i} className="py-1.5 flex items-center justify-between gap-3 text-[13px]">
-              {render(r)}
-            </li>
-          ))}
-        </ul>
-      )}
-    </Panel>
-  );
-};
-
 const Row = ({ title, sub, right }) => (
   <>
-    <div className="min-w-0">
+    <div className="min-w-0 flex-1">
       <p className="font-medium text-gray-800 truncate">{title}</p>
       {sub && <p className="text-xs text-gray-500 truncate">{sub}</p>}
     </div>
@@ -135,331 +73,243 @@ const Row = ({ title, sub, right }) => (
   </>
 );
 
-// Half-circle gauge for the active-users percentage
-const Gauge = ({ percent }) => {
-  const r = 70;
-  const len = Math.PI * r;
-  return (
-    <div className="relative w-36 mx-auto">
-      <svg viewBox="0 0 180 100" className="w-full">
-        <path d="M 20 90 A 70 70 0 0 1 160 90" fill="none" stroke="#E5E7EB" strokeWidth="14" strokeLinecap="round" />
-        <path
-          d="M 20 90 A 70 70 0 0 1 160 90"
-          fill="none"
-          stroke="#16A34A"
-          strokeWidth="14"
-          strokeLinecap="round"
-          strokeDasharray={`${(len * percent) / 100} ${len}`}
-        />
-      </svg>
-      <div className="absolute inset-x-0 bottom-0 text-center">
-        <p className="text-lg font-extrabold text-gray-900">{percent}%</p>
-        <p className="text-xs text-gray-500">Active</p>
-      </div>
-    </div>
-  );
-};
+const inr = (v) => v === undefined || v === null ? '-' : `₹${Number(v).toLocaleString('en-IN', { maximumFractionDigits: 0 })}`;
 
-/* ───────────── loaders (one per API) ───────────── */
+/* ───────────── 1) KPI Stats (from data.topStats) ───────────── */
 
-const loadUsers = () => getUsers().then((r) => r.list);
-const loadCourses = () => getCourses();
-const loadEnquiries = () => getEnquiries();
-const loadBooks = () => getBooks();
-const loadIssues = () => getIssues();
-const loadOverdue = () => getOverdueBooks();
-const loadCategories = () => getCategories();
-const loadNotices = () => getNotices({ page: 1, limit: 5 }).then((r) => r.list);
-const loadTests = () => getClassTests({ page: 1, limit: 50 }).then((r) => r.list);
-const loadMyFees = () => getMyFees();
-
-// Total students: the API reports pages, so ask for 1 per page and read the page count
-const loadStudentCount = async () => {
-  const one = await getStudents({ limit: 1 });
-  if (one.totalPages) return one.totalPages;
-  return (await getStudents({ limit: 100 })).list.length;
-};
-
-const TOTAL_KEYS = ['total_fee', 'totalFee', 'total', 'total_amount', 'totalAmount', 'total_payable', 'net_fee', 'course_fee'];
-const PAID_KEYS = ['paid', 'paid_amount', 'paidAmount', 'total_paid', 'totalPaid', 'amount_paid'];
-
-// Students with dues + total outstanding (course total fee - paid, same rule as the Fees page)
-const loadPendingFees = async () => {
-  const rows = await getPendingFees();
-  const studentKey = (r) =>
-    objectIdOf(r.studentId) || objectIdOf(r.user_id) || objectIdOf(r.student) || objectIdOf(r.student_id) || studentNameOf(r);
-  const courseOf = (r) => objectIdOf(r.course) || objectIdOf(r.course_id);
-
-  const courseIds = [...new Set(rows.map(courseOf).filter(Boolean))];
-  const totals = Object.fromEntries(
-    (await Promise.all(courseIds.map((id) => getFeeComponents(id).then((f) => [id, f.total]).catch(() => null)))).filter(Boolean)
-  );
-
-  let outstanding = 0;
-  let known = false;
-  rows.forEach((r) => {
-    const total = num(r, ...TOTAL_KEYS) ?? totals[courseOf(r)];
-    if (total !== undefined) {
-      outstanding += Math.max(total - (num(r, ...PAID_KEYS) || 0), 0);
-      known = true;
-    }
-  });
-  const students = new Set(rows.map(studentKey).filter(Boolean)).size || rows.length;
-  return { students, outstanding: known ? outstanding : undefined };
-};
-
-/* ───────────── data helpers ───────────── */
-
-const inrShort = (v) => `₹${Number(v).toLocaleString('en-IN', { maximumFractionDigits: 0 })}`;
-const dayOf = (v) => String(v || '').slice(0, 10);
-const upcomingClasses = (list) =>
-  list
-    .filter((s) => dayOf(s.date) >= today() && String(s.status || 'scheduled').toLowerCase() !== 'cancelled')
-    .sort((a, b) => `${dayOf(a.date)} ${a.start_time}`.localeCompare(`${dayOf(b.date)} ${b.start_time}`));
-const upcomingTests = (list) =>
-  list
-    .filter((t) => dayOf(t.test_date) >= today() && !['cancelled', 'completed'].includes(String(t.status || '').toLowerCase()))
-    .sort((a, b) => dayOf(a.test_date).localeCompare(dayOf(b.test_date)));
-const isActiveUser = (u) => u.is_active ?? u.isActive ?? u.status === 'active';
-const roleText = (u) => titleCase(roleOf(u)) || 'Unknown';
-const issueTitle = (i) => {
-  const b = i.book || i.bookId;
-  return (b && typeof b === 'object' ? b.title : i.bookTitle) || 'Book';
-};
-const issueStudent = (i) => {
-  const s = i.studentId || i.student;
-  return (s && typeof s === 'object' ? s.full_name || s.name : i.studentName) || '';
-};
-const notReturned = (i) => String(i.status || '').toLowerCase() !== 'returned';
-const availableOf = (b) => Number(b.availableQty ?? b.available ?? b.availableCopies ?? 0);
-
-/* ───────────── stat widgets ───────────── */
+const SUMMARY_KEY = 'dashboard:summary';
+const loadSummary = getDashboardSummary;
+const stat = (s, key) => s?.topStats?.[key] ?? '-';
 
 export const UserStats = () => (
   <>
-    <LoadStat label="Total Users" k="users" loader={loadUsers} value={(u) => u.length} icon={Users} tile="bg-gradient-to-br from-green-600 to-green-800" to="/users" />
-    <LoadStat label="Active Users" k="users" loader={loadUsers} value={(u) => u.filter(isActiveUser).length} icon={UserCheck} tile="bg-gradient-to-br from-green-400 to-green-600" />
-    <LoadStat label="Faculty" k="users" loader={loadUsers} value={(u) => u.filter((x) => /faculty/i.test(roleOf(x))).length} icon={GraduationCap} tile="bg-gradient-to-br from-orange-500 to-orange-700" />
+    <LoadStat label="Total Users"   k={SUMMARY_KEY} loader={loadSummary} value={(s) => stat(s, 'totalUsers')}  icon={Users}         tile="bg-gradient-to-br from-sky-600 to-sky-800" to="/users" />
+    <LoadStat label="Active Users"  k={SUMMARY_KEY} loader={loadSummary} value={(s) => stat(s, 'activeUsers')} icon={Users}         tile="bg-gradient-to-br from-sky-400 to-sky-600" />
+    <LoadStat label="Faculty"       k={SUMMARY_KEY} loader={loadSummary} value={(s) => stat(s, 'facultyCount')} icon={GraduationCap} tile="bg-gradient-to-br from-orange-500 to-orange-700" />
   </>
 );
 
 export const StudentsStat = () => (
-  <LoadStat label="Students" k="student-count" loader={loadStudentCount} value={(n) => n} icon={UserCheck} tile="bg-gradient-to-br from-sky-500 to-blue-700" to="/students" />
+  <LoadStat label="Students" k={SUMMARY_KEY} loader={loadSummary} value={(s) => stat(s, 'totalStudents')} icon={GraduationCap} tile="bg-gradient-to-br from-sky-500 to-blue-700" to="/students" />
 );
 
 export const CoursesStat = ({ to = '/courses' }) => (
-  <LoadStat label="Total Courses" k="courses" loader={loadCourses} value={(c) => c.length} icon={BookOpen} tile="bg-gradient-to-br from-emerald-500 to-teal-700" to={to} />
+  <LoadStat label="Total Courses" k={SUMMARY_KEY} loader={loadSummary} value={(s) => stat(s, 'totalCourses')} icon={BookOpen} tile="bg-gradient-to-br from-emerald-500 to-teal-700" to={to} />
 );
 
 export const EnquiryStats = () => (
   <>
-    <LoadStat label="New Enquiries" k="enquiries" loader={loadEnquiries} value={(e) => e.filter((x) => String(x.status || 'new').toLowerCase() === 'new').length} icon={ClipboardList} tile="bg-gradient-to-br from-violet-500 to-violet-700" to="/enquiries" />
-    <LoadStat label="Converted" k="enquiries" loader={loadEnquiries} value={(e) => e.filter((x) => String(x.status).toLowerCase() === 'converted').length} icon={UserCheck} tile="bg-gradient-to-br from-green-500 to-green-700" to="/enquiries" />
+    <LoadStat label="New Enquiries" k={SUMMARY_KEY} loader={loadSummary} value={(s) => stat(s, 'newEnquiries')}       icon={ClipboardList} tile="bg-gradient-to-br from-violet-500 to-violet-700" to="/enquiries" />
+    <LoadStat label="Converted"     k={SUMMARY_KEY} loader={loadSummary} value={(s) => stat(s, 'convertedEnquiries')} icon={UserPlus}      tile="bg-gradient-to-br from-sky-500 to-sky-700" to="/enquiries" />
   </>
 );
 
 export const PendingFeeStats = () => (
   <>
-    <LoadStat label="Students with Dues" k="pending-fees" loader={loadPendingFees} value={(d) => d.students} icon={Wallet} tile="bg-gradient-to-br from-amber-500 to-orange-600" to="/fees" />
-    <LoadStat label="Outstanding Fees" k="pending-fees" loader={loadPendingFees} value={(d) => (d.outstanding === undefined ? '-' : inrShort(d.outstanding))} icon={IndianRupee} tile="bg-gradient-to-br from-rose-500 to-red-700" to="/fees" />
+    <LoadStat label="Students with Dues" k={SUMMARY_KEY} loader={loadSummary} value={(s) => stat(s, 'studentsWithDuesCount')} icon={Wallet}        tile="bg-gradient-to-br from-amber-500 to-orange-600" to="/fees" />
+    <LoadStat label="Outstanding Fees"   k={SUMMARY_KEY} loader={loadSummary} value={(s) => inr(stat(s, 'outstandingFees'))}     icon={IndianRupee} tile="bg-gradient-to-br from-rose-500 to-red-700" to="/fees" />
   </>
 );
 
 export const LibraryStats = ({ withCategories = false, withCopies = true }) => (
   <>
-    <LoadStat label="Book Titles" k="books" loader={loadBooks} value={(b) => b.length} icon={Library} tile="bg-gradient-to-br from-green-600 to-green-800" to="/library/books" />
+    <LoadStat label="Book Titles"      k={SUMMARY_KEY} loader={loadSummary} value={(s) => stat(s, 'bookTitles')}   icon={Library}       tile="bg-gradient-to-br from-sky-600 to-sky-800" to="/library/books" />
     {withCopies && (
-      <LoadStat label="Copies Available" k="books" loader={loadBooks} value={(b) => b.reduce((n, x) => n + availableOf(x), 0)} icon={BookOpen} tile="bg-gradient-to-br from-emerald-500 to-teal-700" />
+      <LoadStat label="Copies Available" k={SUMMARY_KEY} loader={loadSummary} value={(s) => stat(s, 'availableCopies')} icon={BookOpen}      tile="bg-gradient-to-br from-emerald-500 to-teal-700" />
     )}
-    <LoadStat label="Issued Now" k="issues" loader={loadIssues} value={(i) => i.filter(notReturned).length} icon={BookMarked} tile="bg-gradient-to-br from-sky-500 to-blue-700" to="/library/issues" />
-    <LoadStat label="Overdue" k="overdue" loader={loadOverdue} value={(o) => o.length} icon={AlertTriangle} tile="bg-gradient-to-br from-rose-500 to-red-700" to="/library/issues" />
-    {withCategories && (
-      <LoadStat label="Categories" k="categories" loader={loadCategories} value={(c) => c.length} icon={Layers} tile="bg-gradient-to-br from-violet-500 to-violet-700" to="/library/categories" />
-    )}
+    <LoadStat label="Issued Now"       k={SUMMARY_KEY} loader={loadSummary} value={(s) => stat(s, 'issuedNow')}    icon={BookMarked}    tile="bg-gradient-to-br from-sky-500 to-blue-700" to="/library/issues" />
+    <LoadStat label="Overdue"          k={SUMMARY_KEY} loader={loadSummary} value={(s) => stat(s, 'overdueBooks')} icon={AlertTriangle} tile="bg-gradient-to-br from-rose-500 to-red-700" to="/library/issues" />
   </>
 );
 
-// Student: own fee numbers (same fields as the My Fees page)
-export const MyFeeStats = () => {
-  const val = (d, ...keys) => {
-    const o = d && typeof d === 'object' && !Array.isArray(d) ? d : {};
-    const v = num(o, ...keys);
-    return v === undefined ? '-' : inrShort(v);
-  };
-  return (
-    <>
-      <LoadStat label="Total Fee" k="my-fees" loader={loadMyFees} value={(d) => val(d, 'totalDue', 'total_fee', 'totalFee', 'total', 'total_amount')} icon={IndianRupee} tile="bg-gradient-to-br from-green-600 to-green-800" to="/my-fees" />
-      <LoadStat label="Paid" k="my-fees" loader={loadMyFees} value={(d) => val(d, 'paid', 'paid_amount', 'paidAmount', 'total_paid', 'totalPaid')} icon={UserCheck} tile="bg-gradient-to-br from-green-400 to-green-600" to="/my-fees" />
-      <LoadStat label="Pending" k="my-fees" loader={loadMyFees} value={(d) => val(d, 'pending', 'pending_amount', 'pendingAmount', 'balance', 'due', 'due_amount')} icon={Wallet} tile="bg-gradient-to-br from-amber-500 to-orange-600" to="/my-fees" />
-    </>
-  );
-};
-
-// facultyId limits the classes to one teacher's own timetable
-export const UpcomingClassesStat = ({ facultyId }) => {
-  const filters = facultyId ? { faculty_id: facultyId } : {};
-  return (
-    <LoadStat
-      label="Upcoming Classes"
-      k={`schedules:${facultyId || 'all'}`}
-      loader={() => getSchedules(filters)}
-      value={(s) => upcomingClasses(s).length}
-      icon={CalendarDays}
-      tile="bg-gradient-to-br from-sky-500 to-blue-700"
-      to="/class-schedules"
-    />
-  );
-};
+export const UpcomingClassesStat = () => (
+  <LoadStat label="Upcoming Classes" k={SUMMARY_KEY} loader={loadSummary} value={(s) => s?.lists?.upcomingClasses?.length ?? 0} icon={Activity} tile="bg-gradient-to-br from-sky-500 to-blue-700" to="/class-schedules" />
+);
 
 export const UpcomingTestsStat = () => (
-  <LoadStat label="Upcoming Tests" k="tests" loader={loadTests} value={(t) => upcomingTests(t).length} icon={ClipboardCheck} tile="bg-gradient-to-br from-violet-500 to-violet-700" to="/class-tests" />
+  <LoadStat label="Upcoming Tests" k={SUMMARY_KEY} loader={loadSummary} value={(s) => s?.lists?.upcomingTests?.length ?? 0} icon={ClipboardList} tile="bg-gradient-to-br from-violet-500 to-violet-700" to="/class-tests" />
 );
 
-export const MySubjectsStat = ({ facultyId }) => (
-  <LoadStat
-    label="My Subjects"
-    k={`assignments:${facultyId}`}
-    loader={() => getAssignments({ faculty_id: facultyId })}
-    value={(a) => a.length}
-    icon={GraduationCap}
-    tile="bg-gradient-to-br from-orange-500 to-orange-700"
-    to="/faculty-assignments"
-  />
-);
+/* ───────────── 2) Course-wise students ───────────── */
 
-/* ───────────── panels ───────────── */
+const COURSE_KEY = 'dashboard:course-wise';
 
-// Active-users gauge + users by role (one request for both)
-export const UserPanels = () => {
-  const { loading, data: users, error } = useLoad('users', loadUsers);
-  const list = users || [];
-  const active = list.filter(isActiveUser).length;
-  const percent = list.length ? Math.round((active / list.length) * 100) : 0;
-  const byRole = Object.entries(
-    list.reduce((acc, u) => {
-      const r = roleText(u);
-      acc[r] = (acc[r] || 0) + 1;
-      return acc;
-    }, {})
-  ).sort((a, b) => b[1] - a[1]);
-  const max = Math.max(1, ...byRole.map(([, n]) => n));
+export const CourseWisePanel = () => {
+  const { loading, data, error } = useLoad(COURSE_KEY, getCourseWiseStudents);
+  const rows = (!loading && !error && Array.isArray(data)) ? data : [];
+  const max = Math.max(1, ...rows.map((r) => r.count || 0));
 
   return (
-    <>
-      <Panel title="Active Users">
-        <p className="text-xs text-gray-500 mb-1">
-          {loading ? 'Loading...' : error ? 'Could not load users' : `${active} of ${list.length} accounts are active`}
-        </p>
-        <Gauge percent={percent} />
-      </Panel>
-      <Panel title="Users by Role">
-        {byRole.length === 0 ? (
-          <p className="text-xs text-gray-400">{loading ? 'Loading...' : 'No users yet'}</p>
-        ) : (
-          <div className="space-y-2">
-            {byRole.map(([role, n]) => (
-              <div key={role} className="flex items-center gap-3 text-sm">
-                <span className="w-24 text-gray-600 shrink-0 text-xs">{role}</span>
+    <Panel title="Students by Course" to="/students">
+      {loading ? <p className="text-xs text-gray-400">Loading...</p>
+        : error ? <p className="text-xs text-gray-400">Could not load course-wise data.</p>
+        : rows.length === 0 ? <p className="text-xs text-gray-400">No courses yet</p>
+        : (
+          <div className="space-y-2 mt-2">
+            {rows.slice(0, 6).map((r) => (
+              <div key={r._id || r.courseName} className="flex items-center gap-3 text-sm">
+                <span className="w-28 text-gray-600 shrink-0 text-xs truncate" title={r.courseName}>{r.courseName}</span>
                 <div className="flex-1 h-4 bg-gray-100 rounded">
                   <div
-                    className="h-full rounded bg-green-600 text-white text-[11px] font-semibold flex items-center justify-end pr-2"
-                    style={{ width: `${Math.max(12, (n / max) * 100)}%` }}
+                    className="h-full rounded bg-sky-600 text-white text-[11px] font-semibold flex items-center justify-end pr-2"
+                    style={{ width: `${Math.max(10, (r.count / max) * 100)}%` }}
                   >
-                    {n}
+                    {r.count}
                   </div>
                 </div>
               </div>
             ))}
           </div>
         )}
-      </Panel>
-    </>
+    </Panel>
   );
 };
 
-export const CoursesPanel = () => (
-  <LoadPanel
-    title="Courses" k="courses" loader={loadCourses} to="/courses" empty="No courses yet"
-    items={(c) => c.slice(0, 4)}
-    render={(c) => <Row title={c.name} right={c.duration} />}
-  />
-);
+/* ───────────── 3) Fee collection trend ───────────── */
 
-export const UpcomingClassesPanel = ({ facultyId, title = 'Upcoming Classes' }) => {
-  const filters = facultyId ? { faculty_id: facultyId } : {};
+const FEES_KEY = 'dashboard:fees-trend';
+
+export const FeesTrendPanel = () => {
+  const { loading, data, error } = useLoad(FEES_KEY, getFeesTrend);
+  const rows = (!loading && !error && Array.isArray(data)) ? data : [];
+
+  // Map { _id: {month, year}, totalCollected } to chart points
+  const points = rows.map((r) => {
+    const month = r._id?.month || 1;
+    const year = r._id?.year || new Date().getFullYear();
+    const date = new Date(year, month - 1);
+    const label = date.toLocaleString('default', { month: 'short' });
+    return { label, value: Number(r.totalCollected) || 0 };
+  });
+
+  const total = points.reduce((n, p) => n + p.value, 0);
+
   return (
-    <LoadPanel
-      title={title} k={`schedules:${facultyId || 'all'}`} loader={() => getSchedules(filters)} to="/class-schedules"
-      empty="No upcoming classes"
-      items={(s) => upcomingClasses(s).slice(0, 4)}
-      render={(s) => (
-        <Row
-          title={s.subject}
-          sub={relName(pick(s, 'batch_id', 'batch')) || relName(pick(s, 'course_id', 'course'))}
-          right={`${fmtDate(s.date)} · ${fmtTime(s.start_time)}`}
-        />
-      )}
-    />
+    <Panel title="Fee Collection Trend" to="/fees">
+      {loading ? <p className="text-xs text-gray-400">Loading...</p>
+        : error ? <p className="text-xs text-gray-400">Could not load fee trend.</p>
+        : points.length === 0 ? <p className="text-xs text-gray-400">No fee data</p>
+        : (
+          <>
+            <p className="text-xs text-gray-500 mb-2">
+              Total collected: <span className="font-semibold text-gray-800">{inr(total)}</span>
+            </p>
+            <div className="flex items-end justify-around h-24 pt-2">
+              {points.map((p, i) => (
+                <div key={i} className="flex flex-col items-center justify-end h-full gap-1">
+                  <div 
+                    className="w-10 bg-sky-500 rounded-t-sm" 
+                    style={{ height: `${Math.max(5, (p.value / Math.max(1, total)) * 100)}%` }}
+                    title={inr(p.value)}
+                  />
+                  <span className="text-[10px] text-gray-400">{p.label}</span>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
+    </Panel>
   );
 };
 
-export const UpcomingTestsPanel = () => (
-  <LoadPanel
-    title="Upcoming Class Tests" k="tests" loader={loadTests} to="/class-tests" empty="No upcoming tests"
-    items={(t) => upcomingTests(t).slice(0, 4)}
-    render={(t) => <Row title={t.title} sub={t.subject} right={`${fmtDate(t.test_date)} · ${t.max_marks ?? '-'} marks`} />}
-  />
-);
+/* ───────────── 4) Recent activity (Enquiries + Blocked Forms) ───────────── */
 
-export const NoticesPanel = () => (
-  <LoadPanel
-    title="Notices" k="notices" loader={loadNotices} to="/notices" empty="No notices"
-    items={(n) => n.filter((x) => !['withdrawn', 'draft'].includes(String(x.status || '').toLowerCase())).slice(0, 4)}
-    render={(n) => <Row title={n.title} right={fmtDate(n.createdAt || n.publishedAt)} />}
-  />
-);
+const ACTIVITY_KEY = 'dashboard:recent-activity';
 
-export const RecentEnquiriesPanel = () => (
-  <LoadPanel
-    title="Recent Enquiries" k="enquiries" loader={loadEnquiries} to="/enquiries" empty="No enquiries yet"
-    items={(e) => [...e].sort((a, b) => String(b.createdAt || '').localeCompare(String(a.createdAt || ''))).slice(0, 4)}
-    render={(e) => (
-      <>
-        <Row title={e.name} sub={relName(pick(e, 'course_interest_id', 'course_interest'))} />
-        <span className={`px-2 py-0.5 rounded-full text-[11px] font-medium ${enquiryStatusClass(String(e.status || 'new').toLowerCase())}`}>
-          {titleCase(e.status || 'new')}
-        </span>
-      </>
-    )}
-  />
-);
+export const RecentActivityPanel = () => {
+  const { loading, data, error } = useLoad(ACTIVITY_KEY, getRecentActivity);
+  
+  const enquiries = data?.recentEnquiries || [];
+  const blocked = data?.blockedForms || [];
+  const rows = [...enquiries, ...blocked];
 
-export const MyAssignmentsPanel = ({ facultyId }) => (
-  <LoadPanel
-    title="My Subjects" k={`assignments:${facultyId}`} loader={() => getAssignments({ faculty_id: facultyId })}
-    to="/faculty-assignments" empty="No subjects assigned yet"
-    items={(a) => a.slice(0, 4)}
-    render={(a) => (
-      <Row
-        title={a.subject}
-        sub={[relName(pick(a, 'course_id', 'course')), relName(pick(a, 'batch_id', 'batch'))].filter(Boolean).join(' · ')}
-      />
-    )}
-  />
-);
+  return (
+    <Panel title="Recent Activity" to="/enquiries">
+      {loading ? <p className="text-xs text-gray-400">Loading...</p>
+        : error ? <p className="text-xs text-gray-400">Could not load activity.</p>
+        : rows.length === 0 ? <p className="text-xs text-gray-400">No recent activity</p>
+        : (
+          <ul className="divide-y divide-gray-100 mt-1">
+            {rows.slice(0, 5).map((a, i) => (
+              <li key={a._id || i} className="py-2 flex items-start gap-2 text-[13px]">
+                <span className="w-6 h-6 rounded-md bg-sky-50 text-sky-700 flex items-center justify-center shrink-0 mt-0.5">
+                  <ClipboardList size={13} />
+                </span>
+                <div className="min-w-0 flex-1">
+                  <p className="text-gray-800 truncate font-medium">{a.name || 'New Enquiry'}</p>
+                  <p className="text-xs text-gray-500 truncate">
+                    {a.course_interest_id?.name || 'General'} · {a.phone || ''}
+                  </p>
+                </div>
+                <span className="text-[10px] text-gray-400 whitespace-nowrap pt-0.5">
+                  {fmtDate(a.createdAt)}
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
+    </Panel>
+  );
+};
 
-export const OverdueBooksPanel = () => (
-  <LoadPanel
-    title="Overdue Books" k="overdue" loader={loadOverdue} to="/library/issues" empty="No overdue books"
-    items={(o) => o.slice(0, 4)}
-    render={(i) => <Row title={issueTitle(i)} sub={issueStudent(i)} right={`${daysOverdue(i.dueDate)} days late`} />}
-  />
-);
+/* ───────────── Extra Lists from Summary (Courses, Classes, Tests) ───────────── */
 
-export const RecentIssuesPanel = () => (
-  <LoadPanel
-    title="Recently Issued" k="issues" loader={loadIssues} to="/library/issues" empty="No books issued yet"
-    items={(i) => [...i].sort((a, b) => String(b.issueDate || b.createdAt || '').localeCompare(String(a.issueDate || a.createdAt || ''))).slice(0, 4)}
-    render={(i) => <Row title={issueTitle(i)} sub={issueStudent(i)} right={`Due ${fmtDate(i.dueDate)}`} />}
-  />
-);
+export const RecentCoursesPanel = () => {
+  const { loading, data, error } = useLoad(SUMMARY_KEY, loadSummary);
+  const rows = data?.lists?.recentCourses || [];
+  return (
+    <Panel title="Recent Courses" to="/courses">
+      {loading ? <p className="text-xs text-gray-400">Loading...</p>
+        : rows.length === 0 ? <p className="text-xs text-gray-400">No courses</p>
+        : (
+          <ul className="divide-y divide-gray-100 mt-1">
+            {rows.slice(0, 4).map((c) => (
+              <li key={c._id} className="py-1.5 flex items-center justify-between gap-3 text-[13px]">
+                <Row title={c.name} sub={c.duration} />
+              </li>
+            ))}
+          </ul>
+        )}
+    </Panel>
+  );
+};
+
+export const UpcomingClassesPanel = () => {
+  const { loading, data } = useLoad(SUMMARY_KEY, loadSummary);
+  const rows = data?.lists?.upcomingClasses || [];
+  return (
+    <Panel title="Upcoming Classes" to="/class-schedules">
+      {loading ? <p className="text-xs text-gray-400">Loading...</p>
+        : rows.length === 0 ? <p className="text-xs text-gray-400">No upcoming classes</p>
+        : (
+          <ul className="divide-y divide-gray-100 mt-1">
+            {rows.slice(0, 4).map((c) => (
+              <li key={c._id} className="py-1.5 flex items-center justify-between gap-3 text-[13px]">
+                <Row title={c.subject} right={`${fmtDate(c.date)} · ${c.start_time}`} />
+              </li>
+            ))}
+          </ul>
+        )}
+    </Panel>
+  );
+};
+
+export const UpcomingTestsPanel = () => {
+  const { loading, data } = useLoad(SUMMARY_KEY, loadSummary);
+  const rows = data?.lists?.upcomingTests || [];
+  return (
+    <Panel title="Upcoming Tests" to="/class-tests">
+      {loading ? <p className="text-xs text-gray-400">Loading...</p>
+        : rows.length === 0 ? <p className="text-xs text-gray-400">No upcoming tests</p>
+        : (
+          <ul className="divide-y divide-gray-100 mt-1">
+            {rows.slice(0, 4).map((t) => (
+              <li key={t._id} className="py-1.5 flex items-center justify-between gap-3 text-[13px]">
+                <Row title={t.title} right={fmtDate(t.test_date)} />
+              </li>
+            ))}
+          </ul>
+        )}
+    </Panel>
+  );
+};

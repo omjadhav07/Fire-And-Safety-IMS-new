@@ -52,7 +52,7 @@ const EnquiryDetails = ({ id, onClose }) => {
             ))}
           </dl>
           {status === "converted" && data.converted_student_id && (
-            <p className="mt-3 text-sm text-green-700">
+            <p className="mt-3 text-sm text-sky-700">
               Converted to a student. <Link to="/students" className="underline">Open students</Link>
             </p>
           )}

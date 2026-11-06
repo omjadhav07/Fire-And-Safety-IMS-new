@@ -74,7 +74,7 @@ const GenerateLedgerModal = ({ onClose, onGenerated }) => {
       <Modal title="Fee ledger generated" onClose={onClose} maxWidth="max-w-lg">
         <div className="space-y-4">
           <div className="text-center space-y-2">
-            <CheckCircle2 size={36} className="mx-auto text-[#16A34A]" />
+            <CheckCircle2 size={36} className="mx-auto text-[#0EA5E9]" />
             <p className="text-sm text-gray-700">{done.message}</p>
           </div>
 
@@ -119,7 +119,7 @@ const GenerateLedgerModal = ({ onClose, onGenerated }) => {
             >
               <Download size={16} /> Download Excel
             </button>
-            <button onClick={onClose} className="px-5 py-2.5 rounded-lg bg-[#16A34A] text-white font-medium hover:bg-[#15803D]">
+            <button onClick={onClose} className="px-5 py-2.5 rounded-lg bg-[#0EA5E9] text-white font-medium hover:bg-[#0284C7]">
               Done
             </button>
           </div>
@@ -153,7 +153,7 @@ const GenerateLedgerModal = ({ onClose, onGenerated }) => {
           <button
             type="submit"
             disabled={saving}
-            className="px-5 py-2.5 rounded-lg bg-[#16A34A] text-white font-medium hover:bg-[#15803D] disabled:opacity-60"
+            className="px-5 py-2.5 rounded-lg bg-[#0EA5E9] text-white font-medium hover:bg-[#0284C7] disabled:opacity-60"
           >
             {saving ? "Generating..." : "Generate ledger"}
           </button>

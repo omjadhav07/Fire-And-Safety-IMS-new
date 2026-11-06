@@ -5,7 +5,7 @@ import { resetPassword } from "./authService";
 import { getErrorMessage } from "../../services/api";
 
 const inputClass =
-  "w-full px-3 py-2.5 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#D32F2F]/40 focus:border-[#D32F2F]";
+  "w-full px-3 py-2.5 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#0EA5E9]/40 focus:border-[#0EA5E9]";
 
 const ResetPassword = () => {
   const navigate = useNavigate();
@@ -49,7 +49,7 @@ const ResetPassword = () => {
           <div className="mb-4 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-3">{error}</div>
         )}
         {success && (
-          <div className="mb-4 rounded-lg bg-green-50 border border-green-200 text-green-700 text-sm px-4 py-3">{success}</div>
+          <div className="mb-4 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm px-4 py-3">{success}</div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-5" noValidate>
@@ -112,13 +112,13 @@ const ResetPassword = () => {
           <button
             type="submit"
             disabled={loading || !!success}
-            className="w-full py-2.5 rounded-lg bg-[#D32F2F] text-white font-medium hover:bg-[#B71C1C] disabled:opacity-60 disabled:cursor-not-allowed"
+            className="w-full py-2.5 rounded-lg bg-[#0EA5E9] text-white font-medium hover:bg-[#0284C7] disabled:opacity-60 disabled:cursor-not-allowed"
           >
             {loading ? "Updating..." : "Update password"}
           </button>
         </form>
 
-        <Link to="/login" className="mt-6 inline-flex items-center gap-1.5 text-sm text-gray-600 hover:text-[#D32F2F]">
+        <Link to="/login" className="mt-6 inline-flex items-center gap-1.5 text-sm text-gray-600 hover:text-[#0EA5E9]">
           <ArrowLeft size={16} /> Back to login
         </Link>
       </div>

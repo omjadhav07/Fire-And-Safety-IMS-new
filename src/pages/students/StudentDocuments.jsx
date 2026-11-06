@@ -16,7 +16,7 @@ const DOC_ACCEPT = ".pdf,.jpg,.jpeg,.png,.webp";
 const DOC_STATUS_STYLES = {
   pending: "bg-amber-100 text-amber-700",
   received: "bg-blue-100 text-blue-700",
-  verified: "bg-green-100 text-green-700",
+  verified: "bg-emerald-100 text-emerald-700",
 };
 const DEFAULT_REMARKS = {
   received: "Physical copy received at the office.",
@@ -134,7 +134,7 @@ const StudentDocuments = ({ student, onClose }) => {
       </p>
 
       {notice && (
-        <div className="mb-3 rounded-lg bg-green-50 border border-green-200 text-green-700 text-sm px-4 py-2.5 flex justify-between">
+        <div className="mb-3 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm px-4 py-2.5 flex justify-between">
           <span>{notice}</span>
           <button onClick={() => setNotice("")} aria-label="Dismiss">×</button>
         </div>
@@ -165,7 +165,7 @@ const StudentDocuments = ({ student, onClose }) => {
                   </p>
                   {d.remarks && <p className="text-xs text-gray-600 mt-1">{d.remarks}</p>}
                   {status === "verified" && d.verified_at && (
-                    <p className="text-xs text-green-700 mt-0.5">Verified on {fmtDate(d.verified_at)}</p>
+                    <p className="text-xs text-sky-700 mt-0.5">Verified on {fmtDate(d.verified_at)}</p>
                   )}
                 </div>
                 <div className="flex items-center gap-0.5 shrink-0">
@@ -184,7 +184,7 @@ const StudentDocuments = ({ student, onClose }) => {
                     onClick={() => openAction(d, "verified")}
                     disabled={status === "verified"}
                     title="Mark as verified"
-                    className={`${iconBtn} hover:text-green-700`}
+                    className={`${iconBtn} hover:text-sky-700`}
                   >
                     <CheckCircle2 size={16} />
                   </button>
@@ -231,7 +231,7 @@ const StudentDocuments = ({ student, onClose }) => {
               onClick={confirmAction}
               disabled={busy}
               className={`px-5 py-2 rounded-lg text-white font-medium disabled:opacity-60 ${
-                action.kind === "delete" ? "bg-red-600 hover:bg-red-700" : "bg-[#16A34A] hover:bg-[#15803D]"
+                action.kind === "delete" ? "bg-red-600 hover:bg-red-700" : "bg-[#0EA5E9] hover:bg-[#0284C7]"
               }`}
             >
               {busy ? "Please wait..." : action.kind === "delete" ? "Delete" : "Confirm"}
@@ -279,14 +279,14 @@ const StudentDocuments = ({ student, onClose }) => {
         </div>
         {uploading && (
           <div className="h-2 rounded-full bg-gray-100 overflow-hidden">
-            <div className="h-full bg-[#16A34A] transition-all" style={{ width: `${progress}%` }} />
+            <div className="h-full bg-[#0EA5E9] transition-all" style={{ width: `${progress}%` }} />
           </div>
         )}
         <div className="flex justify-end">
           <button
             type="submit"
             disabled={uploading}
-            className="px-5 py-2.5 rounded-lg bg-[#16A34A] text-white font-medium hover:bg-[#15803D] disabled:opacity-60"
+            className="px-5 py-2.5 rounded-lg bg-[#0EA5E9] text-white font-medium hover:bg-[#0284C7] disabled:opacity-60"
           >
             {uploading ? `Uploading... ${progress}%` : "Upload"}
           </button>

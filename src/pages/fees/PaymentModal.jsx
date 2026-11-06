@@ -74,7 +74,7 @@ const PaymentModal = ({ initialStudent = null, onClose, onCreated, onViewReceipt
     return (
       <Modal title="Payment recorded" onClose={onClose}>
         <div className="text-center space-y-3 py-2">
-          <CheckCircle2 size={40} className="mx-auto text-[#16A34A]" />
+          <CheckCircle2 size={40} className="mx-auto text-[#0EA5E9]" />
           <p className="text-sm text-gray-700">
             {done.message || "Payment recorded"} · <span className="font-semibold">{inr(done.entry.amount)}</span> from{" "}
             <span className="font-semibold">{done.entry.student.name}</span>
@@ -96,7 +96,7 @@ const PaymentModal = ({ initialStudent = null, onClose, onCreated, onViewReceipt
                 View receipt
               </button>
             )}
-            <button onClick={onClose} className="px-5 py-2.5 rounded-lg bg-[#16A34A] text-white font-medium hover:bg-[#15803D]">
+            <button onClick={onClose} className="px-5 py-2.5 rounded-lg bg-[#0EA5E9] text-white font-medium hover:bg-[#0284C7]">
               Done
             </button>
           </div>
@@ -115,12 +115,12 @@ const PaymentModal = ({ initialStudent = null, onClose, onCreated, onViewReceipt
           {balance !== null && (
             <p className="mt-1.5 text-sm text-gray-600">
               Outstanding balance:{" "}
-              <span className={`font-semibold ${balance > 0 ? "text-red-600" : "text-green-700"}`}>{inr(balance)}</span>
+              <span className={`font-semibold ${balance > 0 ? "text-red-600" : "text-sky-700"}`}>{inr(balance)}</span>
               {balance > 0 && (
                 <button
                   type="button"
                   onClick={() => setForm({ ...form, amount: String(balance) })}
-                  className="ml-3 text-xs font-medium text-green-700 hover:underline"
+                  className="ml-3 text-xs font-medium text-sky-700 hover:underline"
                 >
                   Pay full balance
                 </button>
@@ -167,7 +167,7 @@ const PaymentModal = ({ initialStudent = null, onClose, onCreated, onViewReceipt
           <button
             type="submit"
             disabled={saving}
-            className="px-5 py-2.5 rounded-lg bg-[#16A34A] text-white font-medium hover:bg-[#15803D] disabled:opacity-60"
+            className="px-5 py-2.5 rounded-lg bg-[#0EA5E9] text-white font-medium hover:bg-[#0284C7] disabled:opacity-60"
           >
             {saving ? "Saving..." : "Record payment"}
           </button>

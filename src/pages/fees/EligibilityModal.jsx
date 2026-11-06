@@ -59,7 +59,7 @@ const EligibilityModal = ({ student = null, onClose }) => {
             {eligible !== undefined && (
               <div
                 className={`rounded-lg border px-4 py-3 text-sm font-medium ${
-                  eligible ? "border-green-200 bg-green-50 text-green-800" : "border-red-200 bg-red-50 text-red-800"
+                  eligible ? "border-sky-200 bg-sky-50 text-sky-800" : "border-red-200 bg-red-50 text-red-800"
                 }`}
               >
                 {eligible ? "Eligible for the exam" : "Not eligible for the exam"}

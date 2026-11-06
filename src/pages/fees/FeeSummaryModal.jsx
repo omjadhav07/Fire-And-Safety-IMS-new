@@ -66,7 +66,7 @@ const FeeSummaryModal = ({ student = null, onClose }) => {
           <>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <Stat label="Total due" value={summary.totalDue} />
-              <Stat label="Paid" value={summary.totalPaid} tone="text-green-700" />
+              <Stat label="Paid" value={summary.totalPaid} tone="text-sky-700" />
               <Stat label="Balance" value={summary.balance} tone={summary.balance > 0 ? "text-red-600" : "text-gray-900"} />
             </div>
 
