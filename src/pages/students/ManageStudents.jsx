@@ -520,16 +520,16 @@ import {
   exportStudents,
   downloadStudentTemplate,
   importStudents,
-} from "../students/studentService"; // <--- FIXED HERE
+} from "../students/studentService";
 import { getCourses, getBatches } from "../courses/courseService";
 import { getErrorMessage } from "../../services/api";
 import { ExportMenu, ImportModal } from "../../components/ImportExport";
 import { getId, fmtDate, toDateInput, titleCase } from "../../services/helpers";
-import CreateStudent from "../students/CreateStudent"; // <--- FIXED HERE
-import StudentStatus from "../students/StudentStatus"; // <--- FIXED HERE
-import StudentDocuments from "../students/StudentDocuments"; // <--- FIXED HERE
-import StudentProfile from "../students/StudentProfile"; // <--- FIXED HERE
-import { STATUSES, emptyForm, EDITABLE, statusClass } from "../students/studentUtils"; // <--- FIXED HERE
+import CreateStudent from "../students/CreateStudent";
+import StudentStatus from "../students/StudentStatus";
+import StudentDocuments from "../students/StudentDocuments";
+import StudentProfile from "../students/StudentProfile";
+import { STATUSES, emptyForm, EDITABLE, statusClass } from "../students/studentUtils";
 
 const LIMIT = 20;
 
@@ -540,7 +540,7 @@ const pick = (o, ...keys) => {
 };
 const relId = (v) => (v && typeof v === "object" ? v.id || v._id : v) || "";
 
-const ManageExamForms = () => {
+const ManageStudents = () => {
   const [students, setStudents] = useState([]);
   const [clientFilters, setClientFilters] = useState([]); // filters the API refused, applied here instead
   const [courses, setCourses] = useState([]);
@@ -579,7 +579,7 @@ const ManageExamForms = () => {
     let cancelled = false;
     getCourses()
       .then((list) => !cancelled && setCourses(list))
-      .catch(() => {});
+      .catch(() => { });
     return () => {
       cancelled = true;
     };
@@ -621,7 +621,7 @@ const ManageExamForms = () => {
     applyFilter(setCourseFilter)(id);
     setBatchFilter("");
     setFilterBatches([]);
-    if (id) getBatches(id).then(setFilterBatches).catch(() => {});
+    if (id) getBatches(id).then(setFilterBatches).catch(() => { });
   };
 
   const goToPage = (p) => {
@@ -773,10 +773,10 @@ const ManageExamForms = () => {
 
   return (
     <div>
-      <PageHeader title="Exam Forms" subtitle="Manage student exam forms and applications" />
+      <PageHeader title="Students" subtitle="Admissions and student profiles" />
 
       <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-3 mb-4 flex flex-col lg:flex-row lg:items-center gap-3">
-        
+
         <select
           value={courseFilter}
           onChange={(e) => changeCourseFilter(e.target.value)}
@@ -808,7 +808,7 @@ const ManageExamForms = () => {
             <option key={s} value={s}>{titleCase(s)}</option>
           ))}
         </select>
-        
+
         <div className="flex flex-wrap items-center gap-2 lg:ml-auto">
           <button onClick={reload} className={btnOutline} aria-label="Refresh">
             <RefreshCw size={15} className={loading ? "animate-spin" : ""} />
@@ -971,4 +971,4 @@ const ManageExamForms = () => {
   );
 };
 
-export default ManageExamForms;
+export default ManageStudents;
