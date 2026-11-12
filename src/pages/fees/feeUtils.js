@@ -144,7 +144,7 @@ const csvCell = (v) => {
 // Opens in Excel; plain numbers are kept so the amounts can be summed
 export const downloadFeeDetailCsv = (detail) => {
   const lines = [
-    ["Fire & Safety College"],
+    ["Sahyadri College of Fire Engineering and Safety Management"],
     ["Student Fee Detail"],
     ["Generated on", dateText(new Date())],
     [],
@@ -177,7 +177,7 @@ export const printFeeDetail = (detail) => {
     p{color:#555;margin:0;font-size:13px}table{width:100%;border-collapse:collapse}
     td,th{padding:8px 6px;border-bottom:1px solid #e5e7eb;font-size:14px;text-align:left}
     td.k{color:#555;width:38%}.r{text-align:right}</style></head><body>
-    <h1>Fire &amp; Safety College</h1><p>Student fee detail · ${htmlEsc(dateText(new Date()))}</p>
+    <img src="${window.location.origin}/logo.png" alt="" style="height:64px;margin-bottom:8px" /><h1>Sahyadri College of Fire Engineering and Safety Management</h1><p>Student fee detail · ${htmlEsc(dateText(new Date()))}</p>
     <h2>Student details</h2><table>${kv(detail.info, false)}</table>
     <h2>Fee components</h2>
     <table><tr><th>Component</th><th class="r">Amount</th><th>Required for exam</th></tr>

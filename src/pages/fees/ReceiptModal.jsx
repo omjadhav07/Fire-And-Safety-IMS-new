@@ -162,7 +162,7 @@ const ReceiptModal = ({ paymentId, onClose }) => {
         .total{display:flex;justify-content:space-between;font-size:18px;font-weight:bold;margin-top:14px}
         hr{border:none;border-top:1px solid #ddd;margin:16px 0}
       </style></head><body>
-      <h1>Fire &amp; Safety College</h1><p class="sub">Fee receipt</p>
+      <img src="${window.location.origin}/logo.png" alt="" style="height:64px;margin-bottom:8px" /><h1>Sahyadri College of Fire Engineering and Safety Management</h1><p class="sub">Fee receipt</p>
       <div class="row"><span class="muted">Receipt no.</span><b>${esc(r.receiptNo)}</b></div>
       <div class="row"><span class="muted">Date</span><b>${esc(fmtDateTime(r.date))}</b></div>
       <hr/>
