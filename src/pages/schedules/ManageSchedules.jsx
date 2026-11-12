@@ -1,7 +1,7 @@
 
 // import React, { useEffect, useMemo, useState } from "react";
 // import { Plus, RefreshCw, Eye, Pencil, CalendarX } from "lucide-react";
-// import { getSchedules, createSchedule, updateSchedule, cancelSchedule } from "./classScheduleService";
+// import { getSchedules, createSchedule, updateSchedule, cancelSchedule, importSchedules, downloadScheduleTemplate } from "./classScheduleService";
 // import { getAssignments } from "../faculty/facultyAssignmentService";
 // import { getUsers } from "../users/userService";
 // import { getCourses, getBatches } from "../courses/courseService";
@@ -11,8 +11,18 @@
 // import CreateSchedule from "./CreateSchedule";
 // import ScheduleDetails from "./ScheduleDetails";
 // import { STATUSES, emptyForm, roleOf, today } from "./scheduleUtils";
+// import { ImportModal } from "../../components/ImportExport";
+// import { ImportButton } from "../../components/ui";
+// import { ROLE, getCurrentRole, getCurrentUser } from "../../config/permissions";
 
 // const ManageSchedules = () => {
+//   // Backend rules: create / edit / cancel = super_admin + faculty (own); bulk import = super_admin + office_staff
+//   const role = getCurrentRole();
+//   const me = getCurrentUser();
+//   const myId = me?.id || me?._id || "";
+//   const canManage = role === ROLE.SUPER_ADMIN || role === ROLE.FACULTY;
+//   const canImport = role === ROLE.SUPER_ADMIN || role === ROLE.OFFICE_STAFF;
+//   const [showImport, setShowImport] = useState(false);
 //   const [schedules, setSchedules] = useState([]);
 //   const [faculty, setFaculty] = useState([]);
 //   const [courses, setCourses] = useState([]);
@@ -46,16 +56,20 @@
 //   // Load faculty users + courses, once
 //   useEffect(() => {
 //     let cancelled = false;
-//     Promise.all([getUsers(), getCourses().catch(() => [])])
+//     const usersReq =
+//       role === ROLE.SUPER_ADMIN ? getUsers() : Promise.resolve({ list: [] }); // /users is super_admin only
+//     Promise.all([usersReq, getCourses().catch(() => [])])
 //       .then(([usersRes, courseList]) => {
 //         if (cancelled) return;
 //         const userList = usersRes.list || [];
-//         setFaculty(userList.filter((u) => /faculty/i.test(roleOf(u)) && u.is_active !== false));
+//         const facultyUsers = userList.filter((u) => /faculty/i.test(roleOf(u)) && u.is_active !== false);
+//         // A faculty user can only schedule for themselves
+//         setFaculty(role === ROLE.FACULTY && myId ? [{ id: myId, name: me?.name, email: me?.email }] : facultyUsers);
 //         setCourses(Array.isArray(courseList) ? courseList : (courseList?.data || courseList?.list || []));
 //       })
 //       .catch((err) => !cancelled && setError(getErrorMessage(err, "Could not load faculty list")));
 //     return () => { cancelled = true; };
-//   }, []);
+//   }, [role]);
 
 //   // Load schedules
 //   useEffect(() => {
@@ -132,7 +146,7 @@
 
 //   const openCreate = () => {
 //     setEditing(null);
-//     setForm({ ...emptyForm, course_id: courseFilter, batch_id: batchFilter, faculty_id: facultyFilter, date: dateFilter });
+//     setForm({ ...emptyForm, course_id: courseFilter, batch_id: batchFilter, faculty_id: role === ROLE.FACULTY ? myId : facultyFilter, date: dateFilter });
 //     setFormBatches([]);
 //     if (courseFilter) loadFormBatches(courseFilter);
 //     setFormError("");
@@ -161,7 +175,7 @@
 //   const set = (key) => (e) => setForm({ ...form, [key]: e.target.value });
 
 //   const changeCourse = (e) => {
-//     setForm({ ...form, course_id: e.target.value, batch_id: "", faculty_id: "" });
+//     setForm({ ...form, course_id: e.target.value, batch_id: "", faculty_id: role === ROLE.FACULTY ? myId : "" });
 //     loadFormBatches(e.target.value);
 //   };
 
@@ -306,12 +320,15 @@
 //           >
 //             <RefreshCw size={18} className={loading ? "animate-spin" : ""} />
 //           </button>
-//           <button
-//             onClick={openCreate}
-//             className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-[#0EA5E9] text-white font-medium hover:bg-[#0284C7]"
-//           >
-//             <Plus size={18} /> Schedule class
-//           </button>
+//           {canImport && <ImportButton onClick={() => setShowImport(true)} />}
+//           {canManage && (
+//             <button
+//               onClick={openCreate}
+//               className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-[#0EA5E9] text-white font-medium hover:bg-[#0284C7]"
+//             >
+//               <Plus size={18} /> Schedule class
+//             </button>
+//           )}
 //         </div>
 //       </div>
 
@@ -333,12 +350,16 @@
 //             <option key={getId(b)} value={getId(b)}>{b.name}</option>
 //           ))}
 //         </select>
-//         <select value={facultyFilter} onChange={(e) => applyFilter(setFacultyFilter)(e.target.value)} className={`${inputClass} bg-white`}>
-//           <option value="">All faculty</option>
-//           {faculty.map((f) => (
-//             <option key={getId(f)} value={getId(f)}>{f.name || f.email}</option>
-//           ))}
-//         </select>
+//         {role === ROLE.SUPER_ADMIN ? (
+//           <select value={facultyFilter} onChange={(e) => applyFilter(setFacultyFilter)(e.target.value)} className={`${inputClass} bg-white`}>
+//             <option value="">All faculty</option>
+//             {faculty.map((f) => (
+//               <option key={getId(f)} value={getId(f)}>{f.name || f.email}</option>
+//             ))}
+//           </select>
+//         ) : (
+//           <div />
+//         )}
 //         <input
 //           type="date"
 //           value={dateFilter}
@@ -417,7 +438,7 @@
 //                         >
 //                           <Eye size={16} />
 //                         </button>
-//                         {!cancelled && (
+//                         {!cancelled && canManage && (
 //                           <>
 //                             <button
 //                               onClick={() => openEdit(s)}
@@ -469,6 +490,22 @@
 //         />
 //       )}
 
+//       {showImport && (
+//         <ImportModal
+//           title="Import class schedules"
+//           entity="schedules"
+//           importFn={importSchedules}
+//           templateFn={downloadScheduleTemplate}
+//           templateFormats={["xlsx"]}
+//           accept=".xlsx,.csv"
+//           fileTypesLabel=".xlsx or .csv"
+//           invalidMessage="Only Excel (.xlsx) or CSV files are allowed"
+//           description="One row per weekly class. Course, batch, subject and faculty must already exist, and the faculty must be assigned to that subject. Use Repeat Weeks to create the class for several weeks. Classes that clash with an existing one are skipped and listed."
+//           onClose={() => setShowImport(false)}
+//           onImported={reload}
+//         />
+//       )}
+
 //       {viewId && (
 //         <ScheduleDetails
 //           id={viewId}
@@ -483,7 +520,6 @@
 // };
 
 // export default ManageSchedules;
-
 
 
 // import React, { useEffect, useMemo, useState } from "react";
@@ -949,8 +985,17 @@
 
 
 import React, { useEffect, useMemo, useState } from "react";
-import { Plus, RefreshCw, Eye, Pencil, CalendarX } from "lucide-react";
-import { getSchedules, createSchedule, updateSchedule, cancelSchedule, importSchedules, downloadScheduleTemplate } from "./classScheduleService";
+import { Plus, RefreshCw, Eye, Pencil, CalendarX, Upload } from "lucide-react";
+import {
+  getSchedules,
+  createSchedule,
+  updateSchedule,
+  cancelSchedule,
+  importSchedules,
+  downloadScheduleTemplate,
+} from "./classScheduleService";
+import { ImportModal } from "../../components/ImportExport";
+import { ROLE, getCurrentRole } from "../../config/permissions";
 import { getAssignments } from "../faculty/facultyAssignmentService";
 import { getUsers } from "../users/userService";
 import { getCourses, getBatches } from "../courses/courseService";
@@ -960,17 +1005,11 @@ import { pick, relId, relName, fmtTime, scheduleStatusClass } from "./scheduleUt
 import CreateSchedule from "./CreateSchedule";
 import ScheduleDetails from "./ScheduleDetails";
 import { STATUSES, emptyForm, roleOf, today } from "./scheduleUtils";
-import { ImportModal } from "../../components/ImportExport";
-import { ImportButton } from "../../components/ui";
-import { ROLE, getCurrentRole, getCurrentUser } from "../../config/permissions";
 
 const ManageSchedules = () => {
-  // Backend rules: create / edit / cancel = super_admin + faculty (own); bulk import = super_admin + office_staff
   const role = getCurrentRole();
-  const me = getCurrentUser();
-  const myId = me?.id || me?._id || "";
-  const canManage = role === ROLE.SUPER_ADMIN || role === ROLE.FACULTY;
-  const canImport = role === ROLE.SUPER_ADMIN || role === ROLE.OFFICE_STAFF;
+  const canCreate = role === ROLE.SUPER_ADMIN || role === ROLE.FACULTY; // POST /class-schedules
+  const canImport = role === ROLE.SUPER_ADMIN || role === ROLE.OFFICE_STAFF; // POST /class-schedules/import
   const [showImport, setShowImport] = useState(false);
   const [schedules, setSchedules] = useState([]);
   const [faculty, setFaculty] = useState([]);
@@ -1005,20 +1044,16 @@ const ManageSchedules = () => {
   // Load faculty users + courses, once
   useEffect(() => {
     let cancelled = false;
-    const usersReq =
-      role === ROLE.SUPER_ADMIN ? getUsers() : Promise.resolve({ list: [] }); // /users is super_admin only
-    Promise.all([usersReq, getCourses().catch(() => [])])
+    Promise.all([getUsers(), getCourses().catch(() => [])])
       .then(([usersRes, courseList]) => {
         if (cancelled) return;
         const userList = usersRes.list || [];
-        const facultyUsers = userList.filter((u) => /faculty/i.test(roleOf(u)) && u.is_active !== false);
-        // A faculty user can only schedule for themselves
-        setFaculty(role === ROLE.FACULTY && myId ? [{ id: myId, name: me?.name, email: me?.email }] : facultyUsers);
+        setFaculty(userList.filter((u) => /faculty/i.test(roleOf(u)) && u.is_active !== false));
         setCourses(Array.isArray(courseList) ? courseList : (courseList?.data || courseList?.list || []));
       })
       .catch((err) => !cancelled && setError(getErrorMessage(err, "Could not load faculty list")));
     return () => { cancelled = true; };
-  }, [role]);
+  }, []);
 
   // Load schedules
   useEffect(() => {
@@ -1095,7 +1130,7 @@ const ManageSchedules = () => {
 
   const openCreate = () => {
     setEditing(null);
-    setForm({ ...emptyForm, course_id: courseFilter, batch_id: batchFilter, faculty_id: role === ROLE.FACULTY ? myId : facultyFilter, date: dateFilter });
+    setForm({ ...emptyForm, course_id: courseFilter, batch_id: batchFilter, faculty_id: facultyFilter, date: dateFilter });
     setFormBatches([]);
     if (courseFilter) loadFormBatches(courseFilter);
     setFormError("");
@@ -1124,7 +1159,7 @@ const ManageSchedules = () => {
   const set = (key) => (e) => setForm({ ...form, [key]: e.target.value });
 
   const changeCourse = (e) => {
-    setForm({ ...form, course_id: e.target.value, batch_id: "", faculty_id: role === ROLE.FACULTY ? myId : "" });
+    setForm({ ...form, course_id: e.target.value, batch_id: "", faculty_id: "" });
     loadFormBatches(e.target.value);
   };
 
@@ -1269,8 +1304,15 @@ const ManageSchedules = () => {
           >
             <RefreshCw size={18} className={loading ? "animate-spin" : ""} />
           </button>
-          {canImport && <ImportButton onClick={() => setShowImport(true)} />}
-          {canManage && (
+          {canImport && (
+            <button
+              onClick={() => setShowImport(true)}
+              className="flex items-center gap-2 px-4 py-2.5 rounded-lg border border-gray-300 text-gray-700 font-medium hover:bg-gray-50"
+            >
+              <Upload size={18} /> Import
+            </button>
+          )}
+          {canCreate && (
             <button
               onClick={openCreate}
               className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-[#0EA5E9] text-white font-medium hover:bg-[#0284C7]"
@@ -1299,16 +1341,12 @@ const ManageSchedules = () => {
             <option key={getId(b)} value={getId(b)}>{b.name}</option>
           ))}
         </select>
-        {role === ROLE.SUPER_ADMIN ? (
-          <select value={facultyFilter} onChange={(e) => applyFilter(setFacultyFilter)(e.target.value)} className={`${inputClass} bg-white`}>
-            <option value="">All faculty</option>
-            {faculty.map((f) => (
-              <option key={getId(f)} value={getId(f)}>{f.name || f.email}</option>
-            ))}
-          </select>
-        ) : (
-          <div />
-        )}
+        <select value={facultyFilter} onChange={(e) => applyFilter(setFacultyFilter)(e.target.value)} className={`${inputClass} bg-white`}>
+          <option value="">All faculty</option>
+          {faculty.map((f) => (
+            <option key={getId(f)} value={getId(f)}>{f.name || f.email}</option>
+          ))}
+        </select>
         <input
           type="date"
           value={dateFilter}
@@ -1387,7 +1425,7 @@ const ManageSchedules = () => {
                         >
                           <Eye size={16} />
                         </button>
-                        {!cancelled && canManage && (
+                        {!cancelled && (
                           <>
                             <button
                               onClick={() => openEdit(s)}
@@ -1439,22 +1477,6 @@ const ManageSchedules = () => {
         />
       )}
 
-      {showImport && (
-        <ImportModal
-          title="Import class schedules"
-          entity="schedules"
-          importFn={importSchedules}
-          templateFn={downloadScheduleTemplate}
-          templateFormats={["xlsx"]}
-          accept=".xlsx,.csv"
-          fileTypesLabel=".xlsx or .csv"
-          invalidMessage="Only Excel (.xlsx) or CSV files are allowed"
-          description="One row per weekly class. Course, batch, subject and faculty must already exist, and the faculty must be assigned to that subject. Use Repeat Weeks to create the class for several weeks. Classes that clash with an existing one are skipped and listed."
-          onClose={() => setShowImport(false)}
-          onImported={reload}
-        />
-      )}
-
       {viewId && (
         <ScheduleDetails
           id={viewId}
@@ -1462,6 +1484,22 @@ const ManageSchedules = () => {
           batchName={batchName}
           facultyName={facultyName}
           onClose={() => setViewId(null)}
+        />
+      )}
+
+      {showImport && (
+        <ImportModal
+          title="Import class schedules"
+          entity="class schedules"
+          description="Upload an Excel or CSV file with one row per weekly class. Download the template first so the columns match. A week that clashes with an existing class is skipped and listed in the report."
+          importFn={importSchedules}
+          templateFn={() => downloadScheduleTemplate()}
+          templateFormats={["xlsx"]}
+          onClose={() => setShowImport(false)}
+          onImported={() => {
+            setNotice("Schedule import finished");
+            reload();
+          }}
         />
       )}
     </div>
