@@ -262,6 +262,7 @@ const UploadMaterial = ({ editing, courses, myAssignments, onSaved, onClose }) =
   const [batchesLoading, setBatchesLoading] = useState(!!form.course_id);
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
+  const [progress, setProgress] = useState(0);
 
   // Courses this user may use
   const assignedCourseIds = new Set(myAssignments.map((a) => relId(pick(a, "course_id", "course"))));
@@ -308,6 +309,13 @@ const UploadMaterial = ({ editing, courses, myAssignments, onSaved, onClose }) =
     } else if (!file && !editing) {
       return "Choose a file to upload";
     }
+    if (file) {
+      if (isVideo && !/^video\//i.test(file.type || "")) return "Choose a valid video file (MP4, MOV or WEBM)";
+      if (!isVideo) {
+        const exts = (ACCEPT[form.type] || "").split(",").filter(Boolean);
+        if (exts.length && !exts.some((x) => file.name.toLowerCase().endsWith(x))) return `Allowed file types: ${exts.join(", ")}`;
+      }
+    }
     return "";
   };
 
@@ -328,11 +336,12 @@ const UploadMaterial = ({ editing, courses, myAssignments, onSaved, onClose }) =
     if (isVideo && form.link.trim() && !file) values.link = form.link.trim();
 
     setSaving(true);
+    setProgress(0);
     setError("");
     try {
       const msg = editing ? `"${values.title}" updated` : `"${values.title}" uploaded`;
-      if (editing) await updateMaterial(editing.id || editing._id, values, file);
-      else await createMaterial(values, file);
+      if (editing) await updateMaterial(editing.id || editing._id, values, file, setProgress);
+      else await createMaterial(values, file, setProgress);
       onSaved(msg);
     } catch (err) {
       setError(getErrorMessage(err, "Could not save the material"));
@@ -415,12 +424,18 @@ const UploadMaterial = ({ editing, courses, myAssignments, onSaved, onClose }) =
           />
         </Field>
 
+        {saving && file && (
+          <div className="h-2 rounded-full bg-gray-200 overflow-hidden">
+            <div className="h-full bg-sky-600 transition-all" style={{ width: `${progress}%` }} />
+          </div>
+        )}
+
         <div className="flex justify-end gap-3 pt-2">
           <button type="button" onClick={onClose} className="px-4 py-2.5 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50">
             Cancel
           </button>
           <button type="submit" disabled={saving || noAssignment} className="px-5 py-2.5 rounded-lg bg-[#0EA5E9] text-white font-medium hover:bg-[#0284C7] disabled:opacity-60">
-            {saving ? "Saving..." : editing ? "Save changes" : "Upload material"}
+            {saving ? (file && progress < 100 ? `Uploading... ${progress}%` : "Saving...") : editing ? "Save changes" : "Upload material"}
           </button>
         </div>
       </form>

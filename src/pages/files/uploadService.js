@@ -21,6 +21,20 @@ export const uploadFile = async (file, onProgress) => {
   return data?.data ?? data;
 };
 
+// POST /uploads/videos  (multipart/form-data, field name: "file") - lecture videos, longer timeout for big files
+export const uploadVideo = async (file, onProgress) => {
+  const formData = new FormData();
+  formData.append("file", file);
+  const { data } = await api.post("/uploads/videos", formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+    timeout: 600000,
+    onUploadProgress: (e) => {
+      if (onProgress && e.total) onProgress(Math.round((e.loaded * 100) / e.total));
+    },
+  });
+  return data?.data ?? data;
+};
+
 // GET /uploads  (files uploaded by the logged-in user)
 export const getMyFiles = async (params = {}) => {
   const { data } = await api.get("/uploads", { params });

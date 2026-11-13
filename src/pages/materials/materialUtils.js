@@ -75,12 +75,28 @@ export const statusOf = (m) => {
   return s === "archived" ? "draft" : "published";
 };
 const EXT_TYPE = { pdf: "pdf", ppt: "ppt", pptx: "ppt", doc: "doc", docx: "doc", txt: "notes", mp4: "video", mov: "video", webm: "video" };
-// Type saved with the material, else guessed from the file name
+const mimeType = (mime) => {
+  const x = String(mime || "").toLowerCase();
+  if (x.startsWith("video/")) return "video";
+  if (x.includes("pdf")) return "pdf";
+  if (x.includes("presentation") || x.includes("powerpoint")) return "ppt";
+  if (x.includes("word")) return "doc";
+  if (x.startsWith("text/")) return "notes";
+  return "";
+};
+
+// Type saved with the material, else read from the uploaded file (mime type / file name)
 export const typeOf = (m) => {
+  const up = (m.upload_id && typeof m.upload_id === "object" ? m.upload_id : m.upload || m.file || m.video) || {};
   const t = String(m.type || m.material_type || m.file_type || "").toLowerCase();
-  if (t) return EXT_TYPE[t] || t;
-  const name = String(m.file_name || m.original_name || m.originalName || m.file?.original_name || m.file_path || m.link || "");
-  return EXT_TYPE[name.split(".").pop().toLowerCase()] || (m.link ? "video" : "");
+  if (t) return EXT_TYPE[t] || mimeType(t) || t;
+  const byMime = mimeType(m.mime_type || m.mimeType || up.mime_type || up.mimeType || up.mimetype);
+  if (byMime) return byMime;
+  const name = String(
+    m.file_name || m.original_name || m.originalName || up.original_name || up.originalName || up.file_name || up.filename ||
+      m.file_path || up.file_path || m.link || ""
+  );
+  return EXT_TYPE[name.split(".").pop().toLowerCase()] || (m.link || m.video_url || up.video_url ? "video" : "");
 };
 export const linkOf = (m) => m.link || m.url || m.video_url || "";
 export const uploaderName = (m) => {
