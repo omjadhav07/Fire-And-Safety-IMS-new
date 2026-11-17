@@ -1,19 +1,38 @@
+
 // import React, { useEffect, useState } from "react";
 // import { createClassTest, updateClassTest } from "./classTestService";
 // import { getBatches } from "../courses/courseService";
+// import { getUsers } from "../users/userService";
+// import { getAssignments } from "../faculty/facultyAssignmentService";
 // import { getErrorMessage } from "../../services/api";
 // import Modal from "../../components/Modal";
 // import Field from "../../components/Field";
 // import { getId, toDateInput, titleCase, inputClass } from "../../services/helpers";
+// import { pick, relId } from "../schedules/scheduleUtils";
 // import { TEST_STATUSES, emptyTest } from "./classTestUtils";
 
+// // Get current user's role from localStorage
+// const currentRole = () => {
+//   try {
+//     const u = JSON.parse(localStorage.getItem("userData") || "null");
+//     return typeof u?.role === "string" ? u.role : u?.role?.name || u?.roles?.[0]?.name || "";
+//   } catch {
+//     return "";
+//   }
+// };
+
+// const roleOf = (u) => (typeof u.role === "string" ? u.role : u.role?.name || u.roles?.[0]?.name || "");
+
 // // Create / edit a class test (opens as a popup).
-// // While editing, only the fields the API allows to change are editable.
 // const CreateClassTest = ({ editing, courses, courseName, batchName, onSaved, onClose }) => {
+//   // If the logged-in user is Faculty, they don't need to select themselves from a dropdown.
+//   const isFaculty = currentRole().toLowerCase() === "faculty";
+//   const needsFaculty = !editing && !isFaculty;
 //   const [form, setForm] = useState(
 //     editing
 //       ? {
 //           ...emptyTest,
+//           faculty_id: "",
 //           title: editing.title || "",
 //           description: editing.description || "",
 //           subject: editing.subject || "",
@@ -23,8 +42,10 @@
 //           duration_minutes: editing.duration_minutes ?? "",
 //           status: editing.status || "scheduled",
 //         }
-//       : emptyTest
+//       : { ...emptyTest, faculty_id: "" }
 //   );
+//   const [faculty, setFaculty] = useState([]);
+//   const [assignments, setAssignments] = useState([]);
 //   const [batches, setBatches] = useState([]);
 //   const [batchesLoading, setBatchesLoading] = useState(false);
 //   const [error, setError] = useState("");
@@ -32,13 +53,38 @@
 
 //   const set = (key) => (e) => setForm({ ...form, [key]: e.target.value });
 
-//   // Batches of the chosen course (create mode only)
+//   // Load faculty list & assignments only if an Admin is creating the test
+//   useEffect(() => {
+//     if (!needsFaculty) return undefined;
+//     let cancelled = false;
+    
+//     // Pass no arguments to getUsers to avoid the 400 Bad Request limit error
+//     Promise.all([getUsers(), getAssignments().catch(() => [])])
+//       .then(([usersRes, assigned]) => {
+//         if (cancelled) return;
+//         const userList = usersRes.list || [];
+//         setFaculty(userList.filter((u) => /faculty/i.test(roleOf(u)) && u.is_active !== false));
+//         setAssignments(Array.isArray(assigned) ? assigned : []);
+//       })
+//       .catch((err) => !cancelled && setError(getErrorMessage(err, "Could not load the faculty list")));
+//     return () => {
+//       cancelled = true;
+//     };
+//   }, [needsFaculty]);
+
+//   // Load batches for the selected course
 //   useEffect(() => {
 //     if (editing || !form.course_id) return undefined;
 //     let cancelled = false;
+//     setBatchesLoading(true);
 //     getBatches(form.course_id)
-//       .then((list) => !cancelled && (setBatches(list), setBatchesLoading(false)))
-//       .catch((err) => !cancelled && (setError(getErrorMessage(err, "Could not load batches")), setBatchesLoading(false)));
+//       .then((res) => {
+//         if (cancelled) return;
+//         const list = Array.isArray(res) ? res : (res?.list || res?.data || []);
+//         setBatches(list);
+//       })
+//       .catch((err) => !cancelled && setError(getErrorMessage(err, "Could not load batches")))
+//       .finally(() => !cancelled && setBatchesLoading(false));
 //     return () => {
 //       cancelled = true;
 //     };
@@ -46,8 +92,29 @@
 
 //   const changeCourse = (e) => {
 //     setBatches([]);
-//     setBatchesLoading(!!e.target.value);
-//     setForm({ ...form, course_id: e.target.value, batch_id: "" });
+//     setForm({ ...form, course_id: e.target.value, batch_id: "", faculty_id: "" });
+//   };
+
+//   // Filter faculty based on assigned course & batch
+//   const assignedHere = assignments.filter(
+//     (a) => relId(pick(a, "course_id", "course")) === form.course_id && relId(pick(a, "batch_id", "batch")) === form.batch_id
+//   );
+//   const assignedIds = new Set(assignedHere.map((a) => relId(pick(a, "faculty_id", "faculty"))));
+//   const batchChosen = !!(form.course_id && form.batch_id);
+//   const facultyOptions = batchChosen && assignedIds.size ? faculty.filter((f) => assignedIds.has(getId(f))) : faculty;
+//   const noAssignment = batchChosen && assignments.length > 0 && assignedIds.size === 0;
+
+//   const changeFaculty = (e) => {
+//     const faculty_id = e.target.value;
+//     const subjects = [
+//       ...new Set(
+//         assignedHere
+//           .filter((a) => relId(pick(a, "faculty_id", "faculty")) === faculty_id)
+//           .map((a) => a.subject)
+//           .filter(Boolean)
+//       ),
+//     ];
+//     setForm({ ...form, faculty_id, subject: !form.subject && subjects.length === 1 ? subjects[0] : form.subject });
 //   };
 
 //   const validate = () => {
@@ -58,6 +125,7 @@
 //     if (!editing) {
 //       if (!form.course_id) return "Select a course";
 //       if (!form.batch_id) return "Select a batch";
+//       if (needsFaculty && !form.faculty_id) return "Select the faculty who will take this test";
 //       if (!form.subject.trim()) return "Subject is required";
 //     }
 //     if (!form.test_date) return "Select the test date";
@@ -68,7 +136,6 @@
 //     return "";
 //   };
 
-//   // POST /class-tests   or   PUT /class-tests/:id (changed fields only)
 //   const handleSubmit = async (e) => {
 //     e.preventDefault();
 //     const problem = validate();
@@ -88,6 +155,7 @@
 //     setError("");
 //     try {
 //       if (editing) {
+//         // Prevent editing tests that don't belong to the faculty
 //         const original = {
 //           title: editing.title || "",
 //           description: editing.description || "",
@@ -103,6 +171,10 @@
 //         onSaved(res.message || `"${values.title}" updated`);
 //       } else {
 //         const body = { ...values, course_id: form.course_id, batch_id: form.batch_id, subject: form.subject.trim() };
+        
+//         // Only send faculty_id if Admin is creating it. If Faculty, backend will auto-assign based on token.
+//         if (needsFaculty) body.faculty_id = form.faculty_id; 
+        
 //         if (!body.description) delete body.description;
 //         const res = await createClassTest(body);
 //         onSaved(res.message || `"${values.title}" created`);
@@ -145,7 +217,7 @@
 //               <Field label="Batch">
 //                 <select
 //                   value={form.batch_id}
-//                   onChange={set("batch_id")}
+//                   onChange={(e) => setForm({ ...form, batch_id: e.target.value, faculty_id: "" })}
 //                   disabled={!form.course_id || batchesLoading}
 //                   className={`${inputClass} disabled:bg-gray-50 disabled:text-gray-400`}
 //                 >
@@ -157,6 +229,25 @@
 //                   ))}
 //                 </select>
 //               </Field>
+              
+//               {/* HIDE FACULTY DROPDOWN IF LOGGED IN USER IS FACULTY */}
+//               {needsFaculty && (
+//                 <Field label="Faculty" className="sm:col-span-2">
+//                   <select value={form.faculty_id} onChange={changeFaculty} className={inputClass}>
+//                     <option value="">Select faculty</option>
+//                     {facultyOptions.map((f) => (
+//                       <option key={getId(f)} value={getId(f)}>{f.name || f.email}</option>
+//                     ))}
+//                   </select>
+//                   {batchChosen && assignedIds.size > 0 && <p className="text-xs text-gray-500 mt-1">Showing faculty assigned to this batch.</p>}
+//                   {noAssignment && (
+//                     <p className="text-xs text-amber-700 mt-1">
+//                       No faculty is assigned to this batch yet, so all faculty are listed. The server may reject the test unless the faculty is assigned.
+//                     </p>
+//                   )}
+//                 </Field>
+//               )}
+              
 //               <Field label="Subject" className="sm:col-span-2">
 //                 <input value={form.subject} onChange={set("subject")} placeholder="Fire Safety Basics" className={inputClass} />
 //               </Field>
@@ -167,11 +258,16 @@
 //             <input type="date" value={form.test_date} onChange={set("test_date")} className={inputClass} />
 //           </Field>
 //           <Field label="Status">
-//             <select value={form.status} onChange={set("status")} className={inputClass}>
-//               {(TEST_STATUSES.includes(form.status) ? TEST_STATUSES : [form.status, ...TEST_STATUSES]).map((s) => (
-//                 <option key={s} value={s}>{titleCase(s)}</option>
-//               ))}
-//             </select>
+//             {/* A new test is always "scheduled" (shown as text); the status can be changed only when editing */}
+//             {editing ? (
+//               <select value={form.status} onChange={set("status")} className={inputClass}>
+//                 {(TEST_STATUSES.includes(form.status) ? TEST_STATUSES : [form.status, ...TEST_STATUSES]).map((s) => (
+//                   <option key={s} value={s}>{titleCase(s)}</option>
+//                 ))}
+//               </select>
+//             ) : (
+//               <div className={`${inputClass} bg-gray-50 text-gray-700`}>Scheduled</div>
+//             )}
 //           </Field>
 //           <Field label="Maximum marks">
 //             <input type="number" min="1" value={form.max_marks} onChange={set("max_marks")} placeholder="50" className={inputClass} />
@@ -205,11 +301,13 @@
 
 
 
-import React, { useEffect, useState } from "react";
+
+import React, { useEffect, useMemo, useState } from "react";
 import { createClassTest, updateClassTest } from "./classTestService";
 import { getBatches } from "../courses/courseService";
 import { getUsers } from "../users/userService";
 import { getAssignments } from "../faculty/facultyAssignmentService";
+import { getSubjects } from "../subjects/subjectService";
 import { getErrorMessage } from "../../services/api";
 import Modal from "../../components/Modal";
 import Field from "../../components/Field";
@@ -252,6 +350,8 @@ const CreateClassTest = ({ editing, courses, courseName, batchName, onSaved, onC
   );
   const [faculty, setFaculty] = useState([]);
   const [assignments, setAssignments] = useState([]);
+  const [subjects, setSubjects] = useState([]); // subject master
+  const [subjectsLoading, setSubjectsLoading] = useState(!editing);
   const [batches, setBatches] = useState([]);
   const [batchesLoading, setBatchesLoading] = useState(false);
   const [error, setError] = useState("");
@@ -263,7 +363,7 @@ const CreateClassTest = ({ editing, courses, courseName, batchName, onSaved, onC
   useEffect(() => {
     if (!needsFaculty) return undefined;
     let cancelled = false;
-    
+
     // Pass no arguments to getUsers to avoid the 400 Bad Request limit error
     Promise.all([getUsers(), getAssignments().catch(() => [])])
       .then(([usersRes, assigned]) => {
@@ -277,6 +377,32 @@ const CreateClassTest = ({ editing, courses, courseName, batchName, onSaved, onC
       cancelled = true;
     };
   }, [needsFaculty]);
+
+  // Subject master (new test only: the subject cannot be changed afterwards)
+  useEffect(() => {
+    if (editing) return undefined;
+    let cancelled = false;
+    getSubjects()
+      .then((list) => !cancelled && setSubjects(list))
+      .catch((err) => !cancelled && setError(getErrorMessage(err, "Could not load the subjects")))
+      .finally(() => !cancelled && setSubjectsLoading(false));
+    return () => {
+      cancelled = true;
+    };
+  }, [editing]);
+
+  // Subjects of the chosen course
+  const subjectOptions = useMemo(
+    () => [
+      ...new Set(
+        subjects
+          .filter((x) => relId(pick(x, "course_id", "course")) === form.course_id)
+          .map((x) => x.name)
+          .filter(Boolean)
+      ),
+    ],
+    [subjects, form.course_id]
+  );
 
   // Load batches for the selected course
   useEffect(() => {
@@ -298,7 +424,7 @@ const CreateClassTest = ({ editing, courses, courseName, batchName, onSaved, onC
 
   const changeCourse = (e) => {
     setBatches([]);
-    setForm({ ...form, course_id: e.target.value, batch_id: "", faculty_id: "" });
+    setForm({ ...form, course_id: e.target.value, batch_id: "", faculty_id: "", subject: "" });
   };
 
   // Filter faculty based on assigned course & batch
@@ -312,7 +438,7 @@ const CreateClassTest = ({ editing, courses, courseName, batchName, onSaved, onC
 
   const changeFaculty = (e) => {
     const faculty_id = e.target.value;
-    const subjects = [
+    const assignedSubjects = [
       ...new Set(
         assignedHere
           .filter((a) => relId(pick(a, "faculty_id", "faculty")) === faculty_id)
@@ -320,7 +446,8 @@ const CreateClassTest = ({ editing, courses, courseName, batchName, onSaved, onC
           .filter(Boolean)
       ),
     ];
-    setForm({ ...form, faculty_id, subject: !form.subject && subjects.length === 1 ? subjects[0] : form.subject });
+    const fill = !form.subject && assignedSubjects.length === 1 && subjectOptions.includes(assignedSubjects[0]);
+    setForm({ ...form, faculty_id, subject: fill ? assignedSubjects[0] : form.subject });
   };
 
   const validate = () => {
@@ -332,7 +459,7 @@ const CreateClassTest = ({ editing, courses, courseName, batchName, onSaved, onC
       if (!form.course_id) return "Select a course";
       if (!form.batch_id) return "Select a batch";
       if (needsFaculty && !form.faculty_id) return "Select the faculty who will take this test";
-      if (!form.subject.trim()) return "Subject is required";
+      if (!form.subject.trim()) return "Select the subject";
     }
     if (!form.test_date) return "Select the test date";
     if (!Number.isFinite(max) || max <= 0) return "Maximum marks must be greater than 0";
@@ -377,10 +504,10 @@ const CreateClassTest = ({ editing, courses, courseName, batchName, onSaved, onC
         onSaved(res.message || `"${values.title}" updated`);
       } else {
         const body = { ...values, course_id: form.course_id, batch_id: form.batch_id, subject: form.subject.trim() };
-        
+
         // Only send faculty_id if Admin is creating it. If Faculty, backend will auto-assign based on token.
-        if (needsFaculty) body.faculty_id = form.faculty_id; 
-        
+        if (needsFaculty) body.faculty_id = form.faculty_id;
+
         if (!body.description) delete body.description;
         const res = await createClassTest(body);
         onSaved(res.message || `"${values.title}" created`);
@@ -435,7 +562,7 @@ const CreateClassTest = ({ editing, courses, courseName, batchName, onSaved, onC
                   ))}
                 </select>
               </Field>
-              
+
               {/* HIDE FACULTY DROPDOWN IF LOGGED IN USER IS FACULTY */}
               {needsFaculty && (
                 <Field label="Faculty" className="sm:col-span-2">
@@ -453,9 +580,24 @@ const CreateClassTest = ({ editing, courses, courseName, batchName, onSaved, onC
                   )}
                 </Field>
               )}
-              
+
               <Field label="Subject" className="sm:col-span-2">
-                <input value={form.subject} onChange={set("subject")} placeholder="Fire Safety Basics" className={inputClass} />
+                <select
+                  value={form.subject}
+                  onChange={set("subject")}
+                  disabled={!form.course_id || subjectsLoading}
+                  className={`${inputClass} disabled:bg-gray-50 disabled:text-gray-400`}
+                >
+                  <option value="">
+                    {!form.course_id ? "Select a course first" : subjectsLoading ? "Loading subjects..." : "Select subject"}
+                  </option>
+                  {subjectOptions.map((name) => (
+                    <option key={name} value={name}>{name}</option>
+                  ))}
+                </select>
+                {form.course_id && !subjectsLoading && subjectOptions.length === 0 && (
+                  <p className="text-xs text-amber-600 mt-1">This course has no subjects yet. Add them in Course Master &gt; Subjects.</p>
+                )}
               </Field>
             </>
           )}
@@ -464,11 +606,16 @@ const CreateClassTest = ({ editing, courses, courseName, batchName, onSaved, onC
             <input type="date" value={form.test_date} onChange={set("test_date")} className={inputClass} />
           </Field>
           <Field label="Status">
-            <select value={form.status} onChange={set("status")} className={inputClass}>
-              {(TEST_STATUSES.includes(form.status) ? TEST_STATUSES : [form.status, ...TEST_STATUSES]).map((s) => (
-                <option key={s} value={s}>{titleCase(s)}</option>
-              ))}
-            </select>
+            {/* A new test is always "scheduled" (shown as text); the status can be changed only when editing */}
+            {editing ? (
+              <select value={form.status} onChange={set("status")} className={inputClass}>
+                {(TEST_STATUSES.includes(form.status) ? TEST_STATUSES : [form.status, ...TEST_STATUSES]).map((s) => (
+                  <option key={s} value={s}>{titleCase(s)}</option>
+                ))}
+              </select>
+            ) : (
+              <div className={`${inputClass} bg-gray-50 text-gray-700`}>Scheduled</div>
+            )}
           </Field>
           <Field label="Maximum marks">
             <input type="number" min="1" value={form.max_marks} onChange={set("max_marks")} placeholder="50" className={inputClass} />

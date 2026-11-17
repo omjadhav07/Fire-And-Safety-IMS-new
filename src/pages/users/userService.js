@@ -1,4 +1,49 @@
+// import api from "../../services/api";
+
+// // GET /users
+// export const getUsers = async (params = {}) => {
+//   // Safely remove "limit" if the backend rejects it with a 400 Bad Request
+//   const { limit, ...safeParams } = params; 
+  
+//   const { data } = await api.get("/users", { params: safeParams });
+//   const payload = data?.data ?? data;
+  
+//   // list may be the array itself, or { users: [...] } / { items: [...] }
+//   const list = Array.isArray(payload)
+//     ? payload
+//     : payload?.users || payload?.items || payload?.rows || [];
+    
+//   return { list, meta: data?.meta };
+// };
+
+// // POST /users  { name, email, password, role, phone }
+// export const createUser = async (body) => {
+//   const { data } = await api.post("/users", body);
+//   return data?.data ?? data;
+// };
+
+// // PUT /users/:id  { name, phone }
+// export const updateUser = async (id, body) => {
+//   const { data } = await api.put(`/users/${id}`, body);
+//   return data?.data ?? data;
+// };
+
+// // PATCH /users/:id/status  (activate / deactivate)
+// export const setUserStatus = async (id, isActive) => {
+//   const { data } = await api.patch(`/users/${id}/status`, { is_active: isActive });
+//   return data?.data ?? data;
+// };
+
+// // POST /users/:id/reset-password  { password }  (admin sets a temporary password)
+// export const adminResetPassword = async (id, password) => {
+//   const { data } = await api.post(`/users/${id}/reset-password`, { password });
+//   return data?.data ?? data;
+// };
+
 import api from "../../services/api";
+import { getRoles } from "../roles/rbacService";
+
+const isObjectId = (v) => typeof v === "string" && /^[a-f0-9]{24}$/i.test(v);
 
 // GET /users
 export const getUsers = async (params = {}) => {
@@ -9,10 +54,22 @@ export const getUsers = async (params = {}) => {
   const payload = data?.data ?? data;
   
   // list may be the array itself, or { users: [...] } / { items: [...] }
-  const list = Array.isArray(payload)
+  let list = Array.isArray(payload)
     ? payload
     : payload?.users || payload?.items || payload?.rows || [];
-    
+
+  // The API may send each user's role only as its database id. Turn it into the role name
+  // (faculty, office_staff, ...) so every page that filters users by role keeps working.
+  if (list.some((u) => isObjectId(u.role))) {
+    try {
+      const roles = await getRoles();
+      const names = Object.fromEntries(roles.map((r) => [r._id || r.id, r.name]));
+      list = list.map((u) => (isObjectId(u.role) && names[u.role] ? { ...u, role_id: u.role, role: names[u.role] } : u));
+    } catch {
+      /* roles could not be loaded: the ids stay as they are */
+    }
+  }
+
   return { list, meta: data?.meta };
 };
 

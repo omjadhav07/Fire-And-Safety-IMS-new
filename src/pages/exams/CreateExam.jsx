@@ -267,11 +267,16 @@ const CreateExam = ({ editing, courses, courseName, batchName, onSaved, onClose 
             </select>
           </Field>
           <Field label="Status">
-            <select value={form.status} onChange={set("status")} className={inputClass}>
-              {withCurrent(EXAM_STATUSES, form.status).map((s) => (
-                <option key={s} value={s}>{titleCase(s)}</option>
-              ))}
-            </select>
+            {/* A new exam is always "scheduled" (shown as text); the status can be changed only when editing */}
+            {editing ? (
+              <select value={form.status} onChange={set("status")} className={inputClass}>
+                {withCurrent(EXAM_STATUSES, form.status).map((s) => (
+                  <option key={s} value={s}>{titleCase(s)}</option>
+                ))}
+              </select>
+            ) : (
+              <div className={`${inputClass} bg-gray-50 text-gray-700`}>Scheduled</div>
+            )}
           </Field>
 
           <Field label="Exam date">

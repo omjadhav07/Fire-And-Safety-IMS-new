@@ -1,13 +1,14 @@
+
 // import React, { useEffect, useState } from "react";
 // import { createMaterial, updateMaterial } from "./materialService";
 // import { getBatches } from "../courses/courseService";
 // import { getErrorMessage } from "../../services/api";
 // import Modal from "../../components/Modal";
 // import Field from "../../components/Field";
-// import { inputClass, titleCase } from "../../services/helpers";
+// import { inputClass } from "../../services/helpers";
 // import { pick, relId } from "../schedules/scheduleUtils";
 // import { ROLE, getCurrentRole } from "../../config/permissions";
-// import { MATERIAL_TYPES, STATUSES, emptyMaterial, courseOf, batchOf, typeOf, linkOf, statusOf } from "./materialUtils";
+// import { MATERIAL_TYPES, emptyMaterial, courseOf, batchOf, typeOf, linkOf } from "./materialUtils";
 
 // const ACCEPT = {
 //   pdf: ".pdf",
@@ -32,7 +33,6 @@
 //           subject: editing.subject || "",
 //           type: typeOf(editing) || "pdf",
 //           link: linkOf(editing),
-//           status: statusOf(editing),
 //         }
 //       : emptyMaterial
 //   );
@@ -41,6 +41,7 @@
 //   const [batchesLoading, setBatchesLoading] = useState(!!form.course_id);
 //   const [error, setError] = useState("");
 //   const [saving, setSaving] = useState(false);
+//   const [progress, setProgress] = useState(0);
 
 //   // Courses this user may use
 //   const assignedCourseIds = new Set(myAssignments.map((a) => relId(pick(a, "course_id", "course"))));
@@ -87,6 +88,13 @@
 //     } else if (!file && !editing) {
 //       return "Choose a file to upload";
 //     }
+//     if (file) {
+//       if (isVideo && !/^video\//i.test(file.type || "")) return "Choose a valid video file (MP4, MOV or WEBM)";
+//       if (!isVideo) {
+//         const exts = (ACCEPT[form.type] || "").split(",").filter(Boolean);
+//         if (exts.length && !exts.some((x) => file.name.toLowerCase().endsWith(x))) return `Allowed file types: ${exts.join(", ")}`;
+//       }
+//     }
 //     return "";
 //   };
 
@@ -103,17 +111,17 @@
 //       batch_id: form.batch_id,
 //       subject: form.subject.trim(),
 //       topic: form.title.trim(),
-//       type: form.type,
-//       status: form.status,
 //     };
-//     if (isVideo && form.link.trim()) values.link = form.link.trim();
+//     if (isVideo && form.link.trim() && !file) values.link = form.link.trim();
 
 //     setSaving(true);
+//     setProgress(0);
 //     setError("");
 //     try {
-//       if (editing) await updateMaterial(editing.id || editing._id, values, file);
-//       else await createMaterial(values, file);
-//       onSaved(editing ? `"${values.title}" updated` : `"${values.title}" uploaded`);
+//       const msg = editing ? `"${values.title}" updated` : `"${values.title}" uploaded`;
+//       if (editing) await updateMaterial(editing.id || editing._id, values, file, setProgress);
+//       else await createMaterial(values, file, setProgress);
+//       onSaved(msg);
 //     } catch (err) {
 //       setError(getErrorMessage(err, "Could not save the material"));
 //       setSaving(false);
@@ -170,18 +178,11 @@
 //           </Field>
 //         </div>
 
-//         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+//         <div className="grid grid-cols-1 gap-4">
 //           <Field label="Type">
 //             <select value={form.type} onChange={(e) => { setFile(null); setForm({ ...form, type: e.target.value }); }} className={inputClass}>
 //               {MATERIAL_TYPES.map(([v, l]) => (
 //                 <option key={v} value={v}>{l}</option>
-//               ))}
-//             </select>
-//           </Field>
-//           <Field label="Status">
-//             <select value={form.status} onChange={set("status")} className={inputClass}>
-//               {STATUSES.map((s) => (
-//                 <option key={s} value={s}>{titleCase(s)}</option>
 //               ))}
 //             </select>
 //           </Field>
@@ -202,12 +203,18 @@
 //           />
 //         </Field>
 
+//         {saving && file && (
+//           <div className="h-2 rounded-full bg-gray-200 overflow-hidden">
+//             <div className="h-full bg-sky-600 transition-all" style={{ width: `${progress}%` }} />
+//           </div>
+//         )}
+
 //         <div className="flex justify-end gap-3 pt-2">
 //           <button type="button" onClick={onClose} className="px-4 py-2.5 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50">
 //             Cancel
 //           </button>
 //           <button type="submit" disabled={saving || noAssignment} className="px-5 py-2.5 rounded-lg bg-[#0EA5E9] text-white font-medium hover:bg-[#0284C7] disabled:opacity-60">
-//             {saving ? "Saving..." : editing ? "Save changes" : "Upload material"}
+//             {saving ? (file && progress < 100 ? `Uploading... ${progress}%` : "Saving...") : editing ? "Save changes" : "Upload material"}
 //           </button>
 //         </div>
 //       </form>
@@ -219,10 +226,10 @@
 
 
 
-
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { createMaterial, updateMaterial } from "./materialService";
 import { getBatches } from "../courses/courseService";
+import { getSubjects } from "../subjects/subjectService";
 import { getErrorMessage } from "../../services/api";
 import Modal from "../../components/Modal";
 import Field from "../../components/Field";
@@ -239,7 +246,7 @@ const ACCEPT = {
 };
 
 // Upload / edit study material (popup, same style as the exam popup).
-// Faculty can only pick the course, batch and subject assigned to them; Super Admin can pick anything.
+// Faculty can only pick the course, batch and subject assigned to them; Super Admin can pick any subject of the course.
 const UploadMaterial = ({ editing, courses, myAssignments, onSaved, onClose }) => {
   const isFaculty = getCurrentRole() === ROLE.FACULTY;
 
@@ -260,6 +267,8 @@ const UploadMaterial = ({ editing, courses, myAssignments, onSaved, onClose }) =
   const [file, setFile] = useState(null);
   const [batches, setBatches] = useState([]);
   const [batchesLoading, setBatchesLoading] = useState(!!form.course_id);
+  const [masterSubjects, setMasterSubjects] = useState([]); // subject master
+  const [subjectsLoading, setSubjectsLoading] = useState(true);
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -280,6 +289,18 @@ const UploadMaterial = ({ editing, courses, myAssignments, onSaved, onClose }) =
     };
   }, [form.course_id]);
 
+  // GET /subjects (subject master)
+  useEffect(() => {
+    let cancelled = false;
+    getSubjects()
+      .then((list) => !cancelled && setMasterSubjects(list))
+      .catch(() => {})
+      .finally(() => !cancelled && setSubjectsLoading(false));
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const assignedHere = myAssignments.filter(
     (a) => relId(pick(a, "course_id", "course")) === form.course_id && (!form.batch_id || relId(pick(a, "batch_id", "batch")) === form.batch_id)
   );
@@ -287,7 +308,16 @@ const UploadMaterial = ({ editing, courses, myAssignments, onSaved, onClose }) =
     myAssignments.filter((a) => relId(pick(a, "course_id", "course")) === form.course_id).map((a) => relId(pick(a, "batch_id", "batch")))
   );
   const batchOptions = isFaculty ? batches.filter((b) => assignedBatchIds.has(b.id || b._id)) : batches;
-  const subjects = [...new Set(assignedHere.map((a) => a.subject).filter(Boolean))];
+
+  // Faculty: the subjects assigned to them. Others: every subject of the course from the subject master.
+  const subjects = useMemo(() => {
+    const fromMaster = masterSubjects
+      .filter((x) => relId(pick(x, "course_id", "course")) === form.course_id)
+      .map((x) => x.name);
+    const fromAssignments = assignedHere.map((a) => a.subject);
+    return [...new Set((isFaculty ? fromAssignments : fromMaster).filter(Boolean))];
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [masterSubjects, myAssignments, form.course_id, form.batch_id, isFaculty]);
 
   const set = (key) => (e) => setForm({ ...form, [key]: e.target.value });
   const changeCourse = (e) => {
@@ -386,15 +416,21 @@ const UploadMaterial = ({ editing, courses, myAssignments, onSaved, onClose }) =
             </select>
           </Field>
           <Field label="Subject">
-            {isFaculty || subjects.length > 0 ? (
-              <select value={form.subject} onChange={set("subject")} disabled={!form.batch_id} className={`${inputClass} disabled:bg-gray-50`}>
-                <option value="">{form.batch_id ? "Select subject" : "Pick a batch first"}</option>
-                {[...new Set([...(form.subject ? [form.subject] : []), ...subjects])].map((s) => (
-                  <option key={s} value={s}>{s}</option>
-                ))}
-              </select>
-            ) : (
-              <input value={form.subject} onChange={set("subject")} disabled={!form.batch_id} placeholder="Subject" className={`${inputClass} disabled:bg-gray-50`} />
+            <select
+              value={form.subject}
+              onChange={set("subject")}
+              disabled={!form.batch_id || subjectsLoading}
+              className={`${inputClass} disabled:bg-gray-50`}
+            >
+              <option value="">{!form.batch_id ? "Pick a batch first" : subjectsLoading ? "Loading..." : "Select subject"}</option>
+              {[...new Set([...(form.subject ? [form.subject] : []), ...subjects])].map((s) => (
+                <option key={s} value={s}>{s}</option>
+              ))}
+            </select>
+            {form.batch_id && !subjectsLoading && subjects.length === 0 && (
+              <p className="text-xs text-amber-600 mt-1">
+                {isFaculty ? "No subjects are assigned to you for this batch." : "This course has no subjects yet. Add them in Course Master > Subjects."}
+              </p>
             )}
           </Field>
         </div>
